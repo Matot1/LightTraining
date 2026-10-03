@@ -37,6 +37,15 @@ ${css}
 </style>
 </head>
 <body>
+<input id="file" class="file-pick" type="file">
+<div class="gate" id="gate">
+  <label class="orb" for="file">
+    <span>Загрузить</span>
+    <span>программу</span>
+  </label>
+  <p class="gate-copy">Она проанализирует ваш файл тренировки и составит расписание и шаги.</p>
+  <p class="status" data-status></p>
+</div>
 <div class="book">
   <header class="cover">
     <p class="kicker">Книга тренировок</p>
@@ -47,11 +56,9 @@ ${css}
     ${chapters}
   </main>
   <footer class="colophon">
-    <label class="load">Загрузить программу
-      <input id="file" type="file">
-    </label>
-    <button id="reset" class="linkish" type="button" hidden>Вернуть пример</button>
-    <p id="status"></p>
+    <label class="load" for="file">Загрузить программу</label>
+    <button id="reset" class="linkish" type="button" hidden>Убрать программу</button>
+    <p class="status" data-status></p>
     <p class="fine">Excel, CSV или JSON. Файл остаётся на телефоне.</p>
   </footer>
 </div>

@@ -4,8 +4,25 @@
   const subEl = document.getElementById("book-sub");
   const fileInput = document.getElementById("file");
   const resetBtn = document.getElementById("reset");
-  const status = document.getElementById("status");
+  const statuses = document.querySelectorAll("[data-status]");
   const KEY = "light-training-program-v2";
+
+  function setStatus(text, ok) {
+    statuses.forEach((el) => {
+      el.classList.toggle("ok", Boolean(ok));
+      el.textContent = text || "";
+    });
+  }
+
+  function showBook() {
+    document.body.classList.add("has-program");
+    resetBtn.hidden = false;
+  }
+
+  function showGate() {
+    document.body.classList.remove("has-program");
+    resetBtn.hidden = true;
+  }
 
   function bindImages(root) {
     root.querySelectorAll("img").forEach((img) => {
@@ -85,7 +102,7 @@
       const data = JSON.parse(saved);
       if (validProgram(data)) {
         paint(data);
-        resetBtn.hidden = false;
+        showBook();
       }
     }
   } catch (err) {
@@ -95,29 +112,26 @@
   fileInput.addEventListener("change", async () => {
     const file = fileInput.files && fileInput.files[0];
     if (!file) return;
-    status.classList.remove("ok");
-    status.textContent = "Читаю файл…";
+    setStatus("Читаю файл…", false);
     try {
       const data = await readProgramFile(file);
       if (!validProgram(data)) throw new Error("Файл не разобран. Подойдёт Excel, CSV или JSON со списком упражнений.");
       localStorage.setItem(KEY, JSON.stringify(data));
       paint(data);
-      resetBtn.hidden = false;
+      showBook();
       const count = data.workouts.reduce((sum, workout) => sum + workout.exercises.filter((ex) => ex && ex.name).length, 0);
-      status.classList.add("ok");
-      status.textContent = "Разобрано: " + data.workouts.length + " " + plural(data.workouts.length, "тренировка", "тренировки", "тренировок")
-        + (count ? ", " + count + " " + plural(count, "упражнение", "упражнения", "упражнений") : "");
+      setStatus("Разобрано: " + data.workouts.length + " " + plural(data.workouts.length, "тренировка", "тренировки", "тренировок")
+        + (count ? ", " + count + " " + plural(count, "упражнение", "упражнения", "упражнений") : ""), true);
     } catch (err) {
-      status.classList.remove("ok");
-      status.textContent = (err && err.message) || "Файл не разобран. Подойдёт Excel, CSV или JSON со списком упражнений.";
+      setStatus((err && err.message) || "Файл не разобран. Подойдёт Excel, CSV или JSON со списком упражнений.", false);
     }
     fileInput.value = "";
   });
 
   resetBtn.addEventListener("click", () => {
     try { localStorage.removeItem(KEY); } catch (err) { /* ignore */ }
-    location.hash = "";
-    location.reload();
+    setStatus("");
+    showGate();
   });
 
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
