@@ -23,15 +23,16 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0e0d0b">
+<meta name="theme-color" content="#a9a093">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Тренировки">
-<title>${api.esc(program.title || "Тренировки")}</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Heft">
+<title>Heft</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="apple-touch-startup-image" href="./splash.png">
 <style>
 ${css}
 </style>
@@ -39,6 +40,7 @@ ${css}
 <body>
 <input id="file" class="file-pick" type="file">
 <div class="gate" id="gate">
+  <p class="gate-name">Heft</p>
   <label class="orb" for="file">
     <span>Загрузить</span>
     <span>программу</span>
@@ -48,7 +50,7 @@ ${css}
 </div>
 <div class="book">
   <header class="cover">
-    <p class="kicker">Книга тренировок</p>
+    <p class="kicker">Heft</p>
     <h1 id="book-title">${api.esc(program.title || "Тренировки")}</h1>
     <p class="subtitle" id="book-sub">${api.esc(program.subtitle || "")}</p>
   </header>

@@ -75,7 +75,7 @@
   function paint(program) {
     titleEl.textContent = program.title || "Тренировки";
     subEl.textContent = program.subtitle || "";
-    document.title = program.title || "Тренировки";
+    document.title = "Heft";
     chapters.innerHTML = renderChapters(program);
     bindImages(chapters);
     bindDecks(chapters);

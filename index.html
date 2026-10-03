@@ -3,25 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0e0d0b">
+<meta name="theme-color" content="#a9a093">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Тренировки">
-<title>Тренировки</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Heft">
+<title>Heft</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="apple-touch-startup-image" href="./splash.png">
 <style>
 :root {
-  color-scheme: dark;
-  --bg: #0e0d0b;
-  --ink: #f3eadc;
-  --muted: #b7ad9e;
-  --gold: #e0c48a;
+  color-scheme: light;
+  --bg: #a9a093;
+  --ink: #615569;
+  --muted: #7a7084;
+  --gold: #615569;
   --sun: #ffe14a;
-  --line: rgba(243, 234, 220, 0.14);
-  --soft: rgba(224, 196, 138, 0.08);
+  --panel: #b7aea0;
+  --sheet: #c4baad;
+  --line: rgba(97, 85, 105, 0.28);
+  --soft: rgba(97, 85, 105, 0.08);
+  --font: "Avenir Next", "Avenir Next Demi Bold", sans-serif;
   interpolate-size: allow-keywords;
 }
 
@@ -32,23 +36,12 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   min-height: 100dvh;
-  background:
-    radial-gradient(900px 420px at 50% -12%, #2a241c 0%, transparent 58%),
-    var(--bg);
+  background: var(--bg) url("./images/background.png") center / cover no-repeat;
   color: var(--ink);
-  font-family: ui-serif, Georgia, "Iowan Old Style", Palatino, serif;
+  font-family: var(--font);
+  font-weight: 500;
   font-size: 17px;
   line-height: 1.4;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.045;
-  background-image: radial-gradient(#fff 0.6px, transparent 0.6px);
-  background-size: 3px 3px;
 }
 
 button, summary, label { -webkit-tap-highlight-color: transparent; }
@@ -69,6 +62,20 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   min-height: 100dvh;
 }
 
+.gate-name {
+  position: absolute;
+  top: calc(22px + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: center;
+}
+
 .orb {
   position: absolute;
   left: 50%;
@@ -86,9 +93,9 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   background: var(--sun);
   color: #1c1408;
   box-shadow: 0 0 48px rgba(255, 225, 74, 0.38);
-  font-family: ui-serif, Georgia, Palatino, serif;
+  font-family: var(--font);
   font-size: clamp(22px, 6vw, 28px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.12;
   text-align: center;
   cursor: pointer;
@@ -101,7 +108,7 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   translate: -50% 0;
   width: min(300px, calc(100% - 48px));
   margin: 0;
-  color: var(--sun);
+  color: var(--ink);
   font-size: 17px;
   line-height: 1.35;
   text-align: center;
@@ -134,16 +141,16 @@ body.has-program .book { display: block; }
 
 .kicker {
   margin: 0 0 10px;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font-family: var(--font);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink);
 }
 
 h1 {
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 52px;
   line-height: 0.92;
   letter-spacing: -0.03em;
@@ -152,7 +159,7 @@ h1 {
 .subtitle {
   margin: 10px 0 0;
   color: var(--muted);
-  font-style: italic;
+  font-style: normal;
   font-size: 18px;
 }
 
@@ -219,7 +226,7 @@ summary:active { background: var(--soft); }
 }
 
 .count {
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 12px;
   letter-spacing: 0.02em;
   color: var(--muted);
@@ -245,7 +252,7 @@ details[open] > summary .mark {
 .info {
   margin: 0 0 18px;
   color: var(--muted);
-  font-style: italic;
+  font-style: normal;
   font-size: 17px;
 }
 
@@ -284,7 +291,7 @@ details[open] > summary .mark {
   min-height: 420px;
   overflow: hidden;
   scroll-snap-align: center;
-  background: #141210;
+  background: var(--panel);
   border: 1px solid var(--line);
 }
 
@@ -314,14 +321,14 @@ details[open] > summary .mark {
   height: 100%;
   padding: 16px 16px 28px;
   overflow: auto;
-  background: #1b1814;
-  border-top: 1px solid rgba(224, 196, 138, 0.35);
+  background: var(--sheet);
+  border-top: 1px solid var(--line);
   transform: translateY(calc(var(--top) * -1));
 }
 
 .lens-kicker {
   margin: 0 0 8px;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -331,7 +338,7 @@ details[open] > summary .mark {
 .deck-hint {
   margin: 8px 0 0;
   text-align: center;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -340,7 +347,7 @@ details[open] > summary .mark {
 
 .section-label {
   margin: 20px 0 4px;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -385,18 +392,18 @@ details[open] > summary .mark {
 .plates figcaption {
   margin-top: 4px;
   text-align: center;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.atlas .skin { fill: #241f1b; }
-.atlas .outline { fill: none; stroke: #6e655a; stroke-width: 1.3; }
-.atlas .head { fill: #241f1b; stroke: #6e655a; stroke-width: 1.3; }
-.atlas .m { fill: #3c362f; }
-.atlas .m.on { fill: #e0c48a; }
+.atlas .skin { fill: #cfc6b8; }
+.atlas .outline { fill: none; stroke: var(--ink); stroke-width: 1.3; }
+.atlas .head { fill: #cfc6b8; stroke: var(--ink); stroke-width: 1.3; }
+.atlas .m { fill: #b3a898; }
+.atlas .m.on { fill: var(--ink); }
 
 .ex-copy { min-width: 0; padding-top: 2px; }
 
@@ -411,7 +418,7 @@ details[open] > summary .mark {
 .muscle {
   margin: 4px 0 0;
   color: var(--gold);
-  font-style: italic;
+  font-style: normal;
   font-size: 16px;
 }
 
@@ -442,7 +449,7 @@ details[open] > summary .mark {
 
 .word {
   margin: 4px 0 0;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -457,7 +464,7 @@ details[open] > summary .mark {
 .spoiler summary {
   min-height: 48px;
   color: var(--gold);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -477,13 +484,13 @@ details[open] > summary .mark {
   display: block;
   width: 100%;
   height: auto;
-  background: #141210;
+  background: var(--panel);
   border: 1px solid var(--line);
 }
 
 .etch .ink {
   fill: none;
-  stroke: #e7dccb;
+  stroke: var(--ink);
   stroke-width: 2px;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -491,15 +498,15 @@ details[open] > summary .mark {
 }
 
 .etch .head {
-  fill: #141210;
-  stroke: #e7dccb;
+  fill: var(--sheet);
+  stroke: var(--ink);
   stroke-width: 2px;
   vector-effect: non-scaling-stroke;
 }
 
 .etch .gold {
   fill: none;
-  stroke: #e4c98a;
+  stroke: var(--ink);
   stroke-width: 2px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
@@ -507,25 +514,25 @@ details[open] > summary .mark {
 
 .etch .plate {
   fill: none;
-  stroke: #e4c98a;
+  stroke: var(--ink);
   stroke-width: 1.6px;
   vector-effect: non-scaling-stroke;
 }
 
 .etch .prop {
   fill: none;
-  stroke: #6d6458;
+  stroke: #8a8078;
   stroke-width: 1.5px;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 
-.etch .joint { fill: #e7dccb; stroke: none; }
+.etch .joint { fill: var(--ink); stroke: none; }
 
 .frames figcaption {
   margin-top: 6px;
   text-align: center;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -574,7 +581,7 @@ details[open] > summary .mark {
   padding: 12px 14px;
   border: 1px solid rgba(224, 196, 138, 0.45);
   color: var(--gold);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -588,22 +595,22 @@ details[open] > summary .mark {
   border: 0;
   background: none;
   color: var(--muted);
-  font-family: ui-serif, Georgia, serif;
-  font-style: italic;
+  font-family: var(--font);
+  font-style: normal;
   font-size: 16px;
 }
 
 .fine {
   margin: 0;
   color: var(--muted);
-  font-style: italic;
+  font-style: normal;
   font-size: 15px;
 }
 
 .status {
   margin: 0;
   color: #e7b2a4;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   font-size: 14px;
 }
 
@@ -650,6 +657,7 @@ details[open] > summary .mark {
 <body>
 <input id="file" class="file-pick" type="file">
 <div class="gate" id="gate">
+  <p class="gate-name">Heft</p>
   <label class="orb" for="file">
     <span>Загрузить</span>
     <span>программу</span>
@@ -659,7 +667,7 @@ details[open] > summary .mark {
 </div>
 <div class="book">
   <header class="cover">
-    <p class="kicker">Книга тренировок</p>
+    <p class="kicker">Heft</p>
     <h1 id="book-title">Тренировки</h1>
     <p class="subtitle" id="book-sub">Программа хранится на телефоне</p>
   </header>
@@ -1676,7 +1684,7 @@ async function readProgramFile(file) {
   function paint(program) {
     titleEl.textContent = program.title || "Тренировки";
     subEl.textContent = program.subtitle || "";
-    document.title = program.title || "Тренировки";
+    document.title = "Heft";
     chapters.innerHTML = renderChapters(program);
     bindImages(chapters);
     bindDecks(chapters);
