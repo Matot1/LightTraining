@@ -127,6 +127,17 @@ function deckHtml(exercises) {
   return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div></div><p class="deck-hint">Листай карточки вбок</p>`;
 }
 
+function renderDay(workout) {
+  if (!workout) return "";
+  const exercises = (workout.exercises || []).filter((ex) => ex && typeof ex === "object" && ex.name);
+  const notes = typeof workout.text === "string"
+    ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
+    : "";
+  const title = `<h2 class="day-title">${esc(workout.title || "День")}</h2>`;
+  const cards = exercises.length ? deckHtml(exercises) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
+  return title + notes + cards;
+}
+
 function renderChapters(program) {
   return program.workouts.map((workout, index) => {
     const exercises = workout.exercises.filter((ex) => ex && typeof ex === "object" && ex.name);

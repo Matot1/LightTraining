@@ -5,7 +5,7 @@ const root = __dirname;
 const source = fs.readFileSync(path.join(root, "js/figures.js"), "utf8")
   + "\n"
   + fs.readFileSync(path.join(root, "js/render.js"), "utf8");
-const api = new Function(source + "\nreturn { renderChapters, validProgram, esc };")();
+const api = new Function(source + "\nreturn { renderChapters, renderDay, validProgram, esc };")();
 const program = JSON.parse(fs.readFileSync(path.join(root, "data/program.json"), "utf8"));
 
 if (!api.validProgram(program)) {
@@ -16,7 +16,6 @@ const css = fs.readFileSync(path.join(root, "css/app.css"), "utf8");
 const importer = fs.readFileSync(path.join(root, "js/import.js"), "utf8");
 const client = fs.readFileSync(path.join(root, "js/client.js"), "utf8");
 const json = JSON.stringify(program).replace(/</g, "\\u003c");
-const chapters = api.renderChapters(program);
 
 const html = `<!DOCTYPE html>
 <html lang="ru">
@@ -49,20 +48,30 @@ ${css}
   <p class="status" data-status></p>
 </div>
 <div class="book">
+  <div class="topbar">
+    <p class="brand">Heft</p>
+    <button id="edit" class="corner" type="button">Изменить</button>
+  </div>
+  <nav id="days" class="days"></nav>
   <header class="cover">
-    <p class="kicker">Heft</p>
     <h1 id="book-title">${api.esc(program.title || "Тренировки")}</h1>
     <p class="subtitle" id="book-sub">${api.esc(program.subtitle || "")}</p>
   </header>
-  <main id="chapters">
-    ${chapters}
-  </main>
+  <main id="day-page"></main>
   <footer class="colophon">
     <label class="load" for="file">Загрузить программу</label>
     <button id="reset" class="linkish" type="button" hidden>Убрать программу</button>
     <p class="status" data-status></p>
     <p class="fine">Excel, CSV или JSON. Файл остаётся на телефоне.</p>
   </footer>
+</div>
+<div class="editor" id="editor">
+  <div class="topbar">
+    <p class="brand">Heft</p>
+    <button id="done" class="corner" type="button">Готово</button>
+  </div>
+  <div id="edit-fields"></div>
+  <button id="add-day" class="add-day" type="button">Добавить день</button>
 </div>
 <script type="application/json" id="default-program">${json}</script>
 <script>

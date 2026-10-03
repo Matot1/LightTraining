@@ -129,6 +129,128 @@ body.has-program .gate { display: none; }
 
 body.has-program .book { display: block; }
 
+.editor { display: none; }
+
+body.is-editing .book { display: none; }
+
+body.is-editing .editor { display: block; }
+
+.editor {
+  width: min(480px, 100%);
+  margin: 0 auto;
+  padding:
+    calc(28px + env(safe-area-inset-top))
+    22px
+    calc(32px + env(safe-area-inset-bottom));
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 22px;
+}
+
+.brand {
+  margin: 0;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.days {
+  display: flex;
+  gap: 8px;
+  margin: -6px 0 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.days::-webkit-scrollbar { display: none; }
+
+.day {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: 600 15px var(--font);
+}
+
+.day.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.day-title {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.add-day {
+  display: block;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 14px;
+  border: 1.5px dashed var(--ink);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ink);
+  font: 600 17px var(--font);
+}
+
+.corner {
+  margin: 0;
+  padding: 8px 0 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 600 17px var(--font);
+}
+
+.edit-group {
+  margin: 0 0 28px;
+}
+
+.edit-block {
+  margin: 0 0 18px;
+  padding-bottom: 6px;
+}
+
+.edit-field {
+  display: block;
+  margin: 0 0 12px;
+}
+
+.edit-label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.edit-box {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1.5px dashed var(--ink);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ink);
+  font: 500 17px var(--font);
+  line-height: 1.35;
+  resize: vertical;
+}
+
 .book {
   position: relative;
   width: min(480px, 100%);
@@ -666,32 +788,30 @@ details[open] > summary .mark {
   <p class="status" data-status></p>
 </div>
 <div class="book">
+  <div class="topbar">
+    <p class="brand">Heft</p>
+    <button id="edit" class="corner" type="button">Изменить</button>
+  </div>
+  <nav id="days" class="days"></nav>
   <header class="cover">
-    <p class="kicker">Heft</p>
     <h1 id="book-title">Тренировки</h1>
     <p class="subtitle" id="book-sub">Программа хранится на телефоне</p>
   </header>
-  <main id="chapters">
-    <article class="chapter">
-      <details>
-        <summary>
-          <span class="num">I</span>
-          <span class="titles">
-            <span class="name">Книга</span>
-            <span class="count"></span>
-          </span>
-          <span class="mark" aria-hidden="true"></span>
-        </summary>
-        <div class="page"><p class="note">Своя программа на GitHub не хранится.</p></div>
-      </details>
-    </article>
-  </main>
+  <main id="day-page"></main>
   <footer class="colophon">
     <label class="load" for="file">Загрузить программу</label>
     <button id="reset" class="linkish" type="button" hidden>Убрать программу</button>
     <p class="status" data-status></p>
     <p class="fine">Excel, CSV или JSON. Файл остаётся на телефоне.</p>
   </footer>
+</div>
+<div class="editor" id="editor">
+  <div class="topbar">
+    <p class="brand">Heft</p>
+    <button id="done" class="corner" type="button">Готово</button>
+  </div>
+  <div id="edit-fields"></div>
+  <button id="add-day" class="add-day" type="button">Добавить день</button>
 </div>
 <script type="application/json" id="default-program">{"title":"Тренировки","subtitle":"Программа хранится на телефоне","workouts":[{"title":"Книга","exercises":[],"text":"Своя программа на GitHub не хранится."}]}</script>
 <script>
@@ -1153,6 +1273,17 @@ function deckHtml(exercises) {
   return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div></div><p class="deck-hint">Листай карточки вбок</p>`;
 }
 
+function renderDay(workout) {
+  if (!workout) return "";
+  const exercises = (workout.exercises || []).filter((ex) => ex && typeof ex === "object" && ex.name);
+  const notes = typeof workout.text === "string"
+    ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
+    : "";
+  const title = `<h2 class="day-title">${esc(workout.title || "День")}</h2>`;
+  const cards = exercises.length ? deckHtml(exercises) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
+  return title + notes + cards;
+}
+
 function renderChapters(program) {
   return program.workouts.map((workout, index) => {
     const exercises = workout.exercises.filter((ex) => ex && typeof ex === "object" && ex.name);
@@ -1608,13 +1739,20 @@ async function readProgramFile(file) {
 }
 
 (function () {
-  const chapters = document.getElementById("chapters");
+  const dayPage = document.getElementById("day-page");
+  const daysEl = document.getElementById("days");
+  const addDayBtn = document.getElementById("add-day");
   const titleEl = document.getElementById("book-title");
   const subEl = document.getElementById("book-sub");
   const fileInput = document.getElementById("file");
   const resetBtn = document.getElementById("reset");
+  const editBtn = document.getElementById("edit");
+  const doneBtn = document.getElementById("done");
+  const editFields = document.getElementById("edit-fields");
   const statuses = document.querySelectorAll("[data-status]");
   const KEY = "light-training-program-v2";
+  let program = null;
+  let selectedDay = 0;
 
   function setStatus(text, ok) {
     statuses.forEach((el) => {
@@ -1624,13 +1762,93 @@ async function readProgramFile(file) {
   }
 
   function showBook() {
+    document.body.classList.remove("is-editing");
     document.body.classList.add("has-program");
     resetBtn.hidden = false;
   }
 
   function showGate() {
-    document.body.classList.remove("has-program");
+    document.body.classList.remove("has-program", "is-editing");
     resetBtn.hidden = true;
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(program)); } catch (err) { /* private mode */ }
+  }
+
+  function textField(label, value, onInput, tall) {
+    const wrap = document.createElement("label");
+    wrap.className = "edit-field";
+    const cap = document.createElement("span");
+    cap.className = "edit-label";
+    cap.textContent = label;
+    const box = document.createElement("textarea");
+    box.className = "edit-box";
+    const lines = String(value || "").split("\n").length;
+    box.rows = tall ? Math.min(8, Math.max(3, lines)) : Math.min(4, lines);
+    box.value = value || "";
+    box.addEventListener("input", () => {
+      onInput(box.value);
+      save();
+    });
+    wrap.append(cap, box);
+    return wrap;
+  }
+
+  function filled(value) {
+    const text = typeof value === "string" ? value.trim() : "";
+    return text && text !== "—";
+  }
+
+  function openEditor() {
+    if (!program) return;
+    editFields.replaceChildren();
+    editFields.append(
+      textField("Имя", program.title, (value) => { program.title = value; }),
+      textField("Недели", program.subtitle, (value) => { program.subtitle = value; })
+    );
+    program.workouts.forEach((workout) => {
+      const group = document.createElement("section");
+      group.className = "edit-group";
+      group.append(textField("Тренировка", workout.title, (value) => { workout.title = value; }));
+      if (typeof workout.text === "string") {
+        group.append(textField("Текст", workout.text, (value) => { workout.text = value; }, true));
+      }
+      (workout.exercises || []).forEach((ex) => {
+        if (!ex || typeof ex !== "object") return;
+        const block = document.createElement("div");
+        block.className = "edit-block";
+        block.append(textField("Упражнение", ex.name, (value) => { ex.name = value; }));
+        if (filled(ex.section)) block.append(textField("Раздел", ex.section, (value) => { ex.section = value; }));
+        if (filled(ex.scheme) || ex.name) block.append(textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }));
+        if (filled(ex.muscleLabel)) block.append(textField("Мышцы", ex.muscleLabel, (value) => { ex.muscleLabel = value; }));
+        if (filled(ex.rir)) block.append(textField("RIR", ex.rir, (value) => { ex.rir = value; }));
+        if (filled(ex.rest)) block.append(textField("Отдых", ex.rest, (value) => { ex.rest = value; }));
+        if (filled(ex.weight)) block.append(textField("Вес", ex.weight, (value) => { ex.weight = value; }));
+        group.append(block);
+      });
+      editFields.append(group);
+    });
+    document.body.classList.add("is-editing");
+    window.scrollTo(0, 0);
+  }
+
+  function addDay() {
+    if (!program) return;
+    const n = program.workouts.length + 1;
+    program.workouts.push({
+      title: "День " + n,
+      exercises: [{ name: "Новое упражнение", scheme: "" }]
+    });
+    selectedDay = program.workouts.length - 1;
+    save();
+    openEditor();
+  }
+
+  function closeEditor() {
+    document.body.classList.remove("is-editing");
+    if (program) paint(program);
+    window.scrollTo(0, 0);
   }
 
   function bindImages(root) {
@@ -1681,28 +1899,49 @@ async function readProgramFile(file) {
     });
   }
 
-  function paint(program) {
+  function renderDayButtons() {
+    daysEl.replaceChildren();
+    (program.workouts || []).forEach((workout, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "day" + (index === selectedDay ? " on" : "");
+      button.textContent = workout.title || ("День " + (index + 1));
+      button.addEventListener("click", () => {
+        selectedDay = index;
+        renderDayButtons();
+        showSelectedDay();
+      });
+      daysEl.append(button);
+    });
+  }
+
+  function showSelectedDay() {
+    const workouts = program && program.workouts || [];
+    if (!workouts.length) {
+      dayPage.innerHTML = "";
+      return;
+    }
+    if (selectedDay >= workouts.length) selectedDay = 0;
+    dayPage.innerHTML = renderDay(workouts[selectedDay]);
+    bindImages(dayPage);
+    bindDecks(dayPage);
+    requestAnimationFrame(() => {
+      dayPage.querySelectorAll("[data-deck]").forEach(layoutDeck);
+    });
+  }
+
+  function paint(next) {
+    program = next;
+    if (selectedDay >= (program.workouts || []).length) selectedDay = 0;
     titleEl.textContent = program.title || "Тренировки";
     subEl.textContent = program.subtitle || "";
     document.title = "Heft";
-    chapters.innerHTML = renderChapters(program);
-    bindImages(chapters);
-    bindDecks(chapters);
+    renderDayButtons();
+    showSelectedDay();
   }
 
-  bindImages(chapters);
-  bindDecks(chapters);
-
-  chapters.addEventListener("toggle", (event) => {
-    const details = event.target;
-    if (!details.open) return;
-    details.querySelectorAll("[data-deck]").forEach((deck) => {
-      requestAnimationFrame(() => layoutDeck(deck));
-    });
-  });
-
   window.addEventListener("resize", () => {
-    chapters.querySelectorAll("[data-deck]").forEach(layoutDeck);
+    dayPage.querySelectorAll("[data-deck]").forEach(layoutDeck);
   });
 
   try {
@@ -1726,6 +1965,7 @@ async function readProgramFile(file) {
       const data = await readProgramFile(file);
       if (!validProgram(data)) throw new Error("Файл не разобран. Подойдёт Excel, CSV или JSON со списком упражнений.");
       localStorage.setItem(KEY, JSON.stringify(data));
+      selectedDay = 0;
       paint(data);
       showBook();
       const count = data.workouts.reduce((sum, workout) => sum + workout.exercises.filter((ex) => ex && ex.name).length, 0);
@@ -1739,9 +1979,15 @@ async function readProgramFile(file) {
 
   resetBtn.addEventListener("click", () => {
     try { localStorage.removeItem(KEY); } catch (err) { /* ignore */ }
+    program = null;
+    selectedDay = 0;
     setStatus("");
     showGate();
   });
+
+  editBtn.addEventListener("click", openEditor);
+  doneBtn.addEventListener("click", closeEditor);
+  addDayBtn.addEventListener("click", addDay);
 
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
