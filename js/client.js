@@ -95,15 +95,21 @@
   fileInput.addEventListener("change", async () => {
     const file = fileInput.files && fileInput.files[0];
     if (!file) return;
+    status.classList.remove("ok");
+    status.textContent = "Читаю файл…";
     try {
-      const data = JSON.parse((await file.text()).replace(/^\uFEFF/, ""));
-      if (!validProgram(data)) throw new Error("shape");
+      const data = await readProgramFile(file);
+      if (!validProgram(data)) throw new Error("Файл не разобран. Подойдёт Excel, CSV или JSON со списком упражнений.");
       localStorage.setItem(KEY, JSON.stringify(data));
       paint(data);
       resetBtn.hidden = false;
-      status.textContent = "Загружено: " + file.name;
+      const count = data.workouts.reduce((sum, workout) => sum + workout.exercises.filter((ex) => ex && ex.name).length, 0);
+      status.classList.add("ok");
+      status.textContent = "Разобрано: " + data.workouts.length + " " + plural(data.workouts.length, "тренировка", "тренировки", "тренировок")
+        + (count ? ", " + count + " " + plural(count, "упражнение", "упражнения", "упражнений") : "");
     } catch (err) {
-      status.textContent = "Файл не подошёл. Нужен JSON с массивом workouts.";
+      status.classList.remove("ok");
+      status.textContent = (err && err.message) || "Файл не разобран. Подойдёт Excel, CSV или JSON со списком упражнений.";
     }
     fileInput.value = "";
   });

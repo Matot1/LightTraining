@@ -13,6 +13,7 @@ if (!api.validProgram(program)) {
 }
 
 const css = fs.readFileSync(path.join(root, "css/app.css"), "utf8");
+const importer = fs.readFileSync(path.join(root, "js/import.js"), "utf8");
 const client = fs.readFileSync(path.join(root, "js/client.js"), "utf8");
 const json = JSON.stringify(program).replace(/</g, "\\u003c");
 const chapters = api.renderChapters(program);
@@ -47,16 +48,17 @@ ${css}
   </main>
   <footer class="colophon">
     <label class="load">Загрузить программу
-      <input id="file" type="file" accept="application/json,.json">
+      <input id="file" type="file">
     </label>
     <button id="reset" class="linkish" type="button" hidden>Вернуть пример</button>
     <p id="status"></p>
-    <p class="fine">Свой файл остаётся на этом телефоне.</p>
+    <p class="fine">Excel, CSV или JSON. Файл остаётся на телефоне.</p>
   </footer>
 </div>
 <script type="application/json" id="default-program">${json}</script>
 <script>
 ${source}
+${importer}
 ${client}
 </script>
 </body>

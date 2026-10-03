@@ -522,6 +522,8 @@ details[open] > summary .mark {
   font-size: 14px;
 }
 
+#status.ok { color: var(--gold); }
+
 #status:empty { display: none; }
 
 @media (max-width: 360px) {

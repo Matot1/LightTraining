@@ -98,6 +98,8 @@ function exerciseHtml(ex, index, total) {
   if (scheme.kind === "simple") bits.push(plural(scheme.n, "подход", "подхода", "подходов"));
   const rir = cleanMeta(ex.rir);
   const rest = cleanMeta(ex.rest);
+  const weight = cleanMeta(ex.weight);
+  if (weight) bits.push("вес " + weight);
   if (rir) bits.push("RIR " + rir);
   if (rest) bits.push("отдых " + rest);
   const prescription = scheme.kind === "simple"
