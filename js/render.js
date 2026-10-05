@@ -107,12 +107,12 @@ function weightControl(ex, source) {
   const n = parseWeight(ex.weight);
   const shown = n == null ? "Указать" : formatWeight(n);
   return `<div class="weight${n == null ? " is-empty" : ""}" data-weight="${source}">
-    <span class="weight-label">Вес</span>
     <span class="weight-step">
       <button class="weight-arrow" type="button" data-weight-dec aria-label="Меньше на 0,5 кг">←</button>
       <button class="weight-value" type="button" data-weight-value>${esc(shown)}</button>
       <button class="weight-arrow" type="button" data-weight-inc aria-label="Больше на 0,5 кг">→</button>
     </span>
+    <span class="weight-label">Вес, кг.</span>
   </div>`;
 }
 

@@ -332,18 +332,6 @@ body.is-editing .editor { display: block; }
   color: var(--ink);
 }
 
-@property --rule {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #f5c400;
-}
-
-@property --rule-b {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #f5c400;
-}
-
 h1 {
   margin: 0;
   font-weight: 600;
@@ -363,8 +351,6 @@ h1 {
 
 .cover {
   --rule: #f5c400;
-  --rule-b: #f5c400;
-  --mix: 0%;
 }
 
 .cover::after {
@@ -374,9 +360,7 @@ h1 {
   margin-top: 20px;
   margin-bottom: 16px;
   background: linear-gradient(90deg, transparent, var(--rule), transparent);
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--rule-b) var(--mix), var(--rule)), transparent);
   opacity: 0.75;
-  transition: --rule 0.45s ease, --rule-b 0.45s ease;
 }
 
 .chapter { border-top: 1px solid var(--line); }
@@ -672,7 +656,7 @@ details[open] > summary .mark {
 
 .dose {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   margin: 8px 0 0;
@@ -691,15 +675,18 @@ details[open] > summary .mark {
 .weight {
   display: flex;
   flex: none;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
   margin-left: auto;
   color: #fff;
 }
 
 .weight-label {
-  font-size: 18px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.1;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .weight-step {
@@ -749,7 +736,7 @@ details[open] > summary .mark {
   background: transparent;
   color: #fff;
   font: 500 36px/0.9 var(--font);
-  text-align: right;
+  text-align: center;
 }
 
 .weight.is-empty .weight-input {

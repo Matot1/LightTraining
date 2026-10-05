@@ -204,14 +204,23 @@
     return "#f5c400";
   }
 
+  function mixColor(from, to, t) {
+    const parse = (hex) => {
+      const n = parseInt(hex.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const a = parse(from);
+    const b = parse(to);
+    const ch = (i) => Math.round(a[i] + (b[i] - a[i]) * t);
+    return "rgb(" + ch(0) + ", " + ch(1) + ", " + ch(2) + ")";
+  }
+
   function syncRule(deck) {
     const cover = document.querySelector(".cover");
     if (!cover) return;
     const cards = deck ? Array.from(deck.querySelectorAll(".lens-card")) : [];
     if (!cards.length) {
       cover.style.setProperty("--rule", "#f5c400");
-      cover.style.setProperty("--rule-b", "#f5c400");
-      cover.style.setProperty("--mix", "0%");
       return;
     }
     const view = deck.getBoundingClientRect();
@@ -236,10 +245,8 @@
       }
     }
     const span = right.x - left.x;
-    const mix = span > 1 ? ((center - left.x) / span) * 100 : 0;
-    cover.style.setProperty("--rule", left.color);
-    cover.style.setProperty("--rule-b", right.color);
-    cover.style.setProperty("--mix", Math.round(mix * 10) / 10 + "%");
+    const t = span > 1 ? (center - left.x) / span : 0;
+    cover.style.setProperty("--rule", left.color === right.color ? left.color : mixColor(left.color, right.color, t));
   }
 
   function nudgeWeight(current, dir) {
