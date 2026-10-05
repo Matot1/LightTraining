@@ -348,11 +348,23 @@ body.is-editing .editor { display: block; }
   color: var(--ink);
 }
 
+@property --rule {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f5c400;
+}
+
+@property --rule-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f5c400;
+}
+
 h1 {
   margin: 0;
   font-weight: 600;
-  font-size: 52px;
-  line-height: 0.92;
+  font-size: 26px;
+  line-height: 1.05;
   letter-spacing: -0.03em;
 }
 
@@ -365,13 +377,22 @@ h1 {
 
 .subtitle:empty { display: none; }
 
+.cover {
+  --rule: #f5c400;
+  --rule-b: #f5c400;
+  --mix: 0%;
+}
+
 .cover::after {
   content: "";
   display: block;
   height: 1px;
   margin-top: 20px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, transparent, var(--rule), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--rule-b) var(--mix), var(--rule)), transparent);
   opacity: 0.75;
+  transition: --rule 0.45s ease, --rule-b 0.45s ease;
 }
 
 .chapter { border-top: 1px solid var(--line); }
@@ -536,7 +557,7 @@ details[open] > summary .mark {
 .lens-kicker {
   margin: 0 0 8px;
   font-family: var(--font);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #fff;
@@ -662,14 +683,96 @@ details[open] > summary .mark {
   margin: 4px 0 0;
   color: var(--gold);
   font-style: normal;
-  font-size: 16px;
+  font-size: 18px;
 }
+
+.dose {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 8px 0 0;
+}
+
+.dose > .prescription,
+.dose > .scheme { min-width: 0; }
 
 .prescription {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin: 8px 0 0;
+  margin: 0;
+}
+
+.weight {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: #fff;
+}
+
+.weight-label {
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.weight-step {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.weight-arrow,
+.weight-value {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.weight-arrow {
+  width: 28px;
+  height: 36px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.weight-value {
+  min-width: 1.2em;
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 0.9;
+}
+
+.weight.is-empty .weight-value {
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.weight-input {
+  width: 4.6em;
+  margin: 0;
+  padding: 0 0 1px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font: 500 36px/0.9 var(--font);
+  text-align: right;
+}
+
+.weight.is-empty .weight-input {
+  width: 5.4em;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .prescription .n {
@@ -684,7 +787,7 @@ details[open] > summary .mark {
 }
 
 .scheme {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 20px;
   line-height: 1.3;
   white-space: pre-line;
@@ -862,7 +965,7 @@ details[open] > summary .mark {
 .status:empty { display: none; }
 
 @media (max-width: 360px) {
-  h1 { font-size: 44px; }
+  h1 { font-size: 22px; }
   .ex-top { grid-template-columns: 108px 1fr; }
   .plates svg { width: 48px; }
   .name, .ex-copy h2 { font-size: 19px; }
@@ -1363,6 +1466,32 @@ function schemeOf(ex) {
   return parseScheme(ex.scheme || (ex.sets != null ? `${ex.sets}${ex.reps ? "×" + ex.reps : ""}` : ""));
 }
 
+function parseWeight(value) {
+  const text = String(value ?? "").trim().replace(",", ".");
+  const match = text.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.round(n * 100) / 100;
+}
+
+function formatWeight(n) {
+  return String(Math.round(n * 100) / 100).replace(".", ",");
+}
+
+function weightControl(ex, source) {
+  const n = parseWeight(ex.weight);
+  const shown = n == null ? "Указать" : formatWeight(n);
+  return `<div class="weight${n == null ? " is-empty" : ""}" data-weight="${source}">
+    <span class="weight-label">Вес</span>
+    <span class="weight-step">
+      <button class="weight-arrow" type="button" data-weight-dec aria-label="Меньше на 0,5 кг">←</button>
+      <button class="weight-value" type="button" data-weight-value>${esc(shown)}</button>
+      <button class="weight-arrow" type="button" data-weight-inc aria-label="Больше на 0,5 кг">→</button>
+    </span>
+  </div>`;
+}
+
 function partOf(ex) {
   const name = String((ex && ex.name) || "").toLowerCase().replace(/ё/g, "е");
   const section = String((ex && ex.section) || "").toLowerCase().replace(/ё/g, "е");
@@ -1373,7 +1502,7 @@ function partOf(ex) {
   return "";
 }
 
-function exerciseHtml(ex, index, total) {
+function exerciseHtml(ex, index, total, source) {
   const ids = muscleIds(ex);
   const label = muscleLabel(ex);
   const scheme = schemeOf(ex);
@@ -1381,13 +1510,12 @@ function exerciseHtml(ex, index, total) {
   if (scheme.kind === "simple") bits.push(plural(scheme.n, "подход", "подхода", "подходов"));
   const rir = cleanMeta(ex.rir);
   const rest = cleanMeta(ex.rest);
-  const weight = cleanMeta(ex.weight);
-  if (weight) bits.push("вес " + weight);
   if (rir) bits.push("RIR " + rir);
   if (rest) bits.push("отдых " + rest);
   const prescription = scheme.kind === "simple"
     ? `<p class="prescription"><span class="n">${esc(String(scheme.n))}</span><span class="r">× ${esc(scheme.reps)}</span></p>`
     : (scheme.kind === "block" ? `<p class="scheme">${esc(scheme.text)}</p>` : "");
+  const dose = `<div class="dose">${prescription}${weightControl(ex, source)}</div>`;
   const part = partOf(ex);
   const kicker = [ex.section, total ? `${index + 1} / ${total}` : ""].filter(Boolean).join(" · ");
   const plainTop = scheme.kind === "block" ? scheme.text : (scheme.kind === "simple" ? `${scheme.n} × ${scheme.reps}` : (ex.section || ""));
@@ -1400,34 +1528,41 @@ function exerciseHtml(ex, index, total) {
       ${kicker ? `<p class="lens-kicker"${part ? ` data-part="${part}"` : ""}>${esc(kicker)}</p>` : ""}
       <h2>${esc(ex.name || "Упражнение")}</h2>
       ${label ? `<p class="muscle">${esc(label)}</p>` : ""}
-      ${prescription}
+      ${dose}
       ${bits.length ? `<p class="word">${esc(bits.join(" · "))}</p>` : ""}
       ${spoiler(ex)}
     </div>
   </article>`;
 }
 
-function deckHtml(exercises) {
+function exerciseItems(workout) {
+  return (workout.exercises || [])
+    .map((ex, source) => ({ ex, source }))
+    .filter((item) => item.ex && typeof item.ex === "object" && item.ex.name);
+}
+
+function deckHtml(items) {
   const arrow = `<button class="deck-next" type="button" aria-label="Следующая карточка"><svg viewBox="0 0 88 16" aria-hidden="true"><path d="M2 8 H74"/><path d="M66 2 L78 8 L66 14"/></svg></button>`;
-  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div>${arrow}</div>`;
+  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${items.map((item, index) => exerciseHtml(item.ex, index, items.length, item.source)).join("")}</div>${arrow}</div>`;
 }
 
 function renderDay(workout) {
   if (!workout) return "";
-  const exercises = (workout.exercises || []).filter((ex) => ex && typeof ex === "object" && ex.name);
+  const items = exerciseItems(workout);
   const notes = typeof workout.text === "string"
     ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
     : "";
   const title = `<h2 class="day-title">${esc(workout.title || "День")}</h2>`;
   const dayPart = partOf({ name: workout.title, section: "" });
   const noteBlock = notes ? `<div class="note-block"${dayPart ? ` data-part="${dayPart}"` : ""}>${notes}</div>` : "";
-  const cards = exercises.length ? deckHtml(exercises) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
+  const cards = items.length ? deckHtml(items) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
   return title + noteBlock + cards;
 }
 
 function renderChapters(program) {
   return program.workouts.map((workout, index) => {
-    const exercises = workout.exercises.filter((ex) => ex && typeof ex === "object" && ex.name);
+    const items = exerciseItems(workout);
+    const exercises = items.map((item) => item.ex);
     const totalSets = exercises.reduce((sum, ex) => sum + setsCount(ex), 0);
     const bits = [`${exercises.length} ${plural(exercises.length, "упражнение", "упражнения", "упражнений")}`];
     if (totalSets) bits.push(`${totalSets} ${plural(totalSets, "подход", "подхода", "подходов")}`);
@@ -1438,7 +1573,7 @@ function renderChapters(program) {
       ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
       : "";
     const body = exercises.length
-      ? deckHtml(exercises)
+      ? deckHtml(items)
       : (notes ? "" : `<p class="info">В этой тренировке пока нет упражнений.</p>`);
     const count = exercises.length ? bits.join(" · ") : "";
     return `<article class="chapter">
@@ -2079,7 +2214,116 @@ async function readProgramFile(file) {
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  function partColor(part) {
+    if (part === "warm") return "#2fbf4f";
+    if (part === "cool" || part === "cardio") return "#e23d3d";
+    return "#f5c400";
+  }
+
+  function syncRule(deck) {
+    const cover = document.querySelector(".cover");
+    if (!cover) return;
+    const cards = deck ? Array.from(deck.querySelectorAll(".lens-card")) : [];
+    if (!cards.length) {
+      cover.style.setProperty("--rule", "#f5c400");
+      cover.style.setProperty("--rule-b", "#f5c400");
+      cover.style.setProperty("--mix", "0%");
+      return;
+    }
+    const view = deck.getBoundingClientRect();
+    const center = view.left + view.width / 2;
+    const points = cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+      return { color: partColor(card.dataset.part), x: rect.left + rect.width / 2 };
+    }).sort((a, b) => a.x - b.x);
+    let left = points[0];
+    let right = points[0];
+    if (center <= points[0].x) {
+      left = right = points[0];
+    } else if (center >= points[points.length - 1].x) {
+      left = right = points[points.length - 1];
+    } else {
+      for (let i = 0; i < points.length - 1; i++) {
+        if (points[i].x <= center && points[i + 1].x >= center) {
+          left = points[i];
+          right = points[i + 1];
+          break;
+        }
+      }
+    }
+    const span = right.x - left.x;
+    const mix = span > 1 ? ((center - left.x) / span) * 100 : 0;
+    cover.style.setProperty("--rule", left.color);
+    cover.style.setProperty("--rule-b", right.color);
+    cover.style.setProperty("--mix", Math.round(mix * 10) / 10 + "%");
+  }
+
+  function nudgeWeight(current, dir) {
+    if (current == null) return dir > 0 ? 0.5 : null;
+    const next = Math.round((current + dir * 0.5) * 100) / 100;
+    return next < 0.5 ? null : next;
+  }
+
+  function paintWeight(box, ex) {
+    const valueBtn = box.querySelector("[data-weight-value]");
+    if (!valueBtn) return;
+    const n = parseWeight(ex.weight);
+    box.classList.toggle("is-empty", n == null);
+    valueBtn.textContent = n == null ? "Указать" : formatWeight(n);
+  }
+
+  function bindWeights(root) {
+    const workout = program && program.workouts && program.workouts[selectedDay];
+    if (!workout) return;
+    root.querySelectorAll("[data-weight]").forEach((box) => {
+      const source = Number(box.dataset.weight);
+      const ex = workout.exercises && workout.exercises[source];
+      if (!ex) return;
+      const dec = box.querySelector("[data-weight-dec]");
+      const inc = box.querySelector("[data-weight-inc]");
+      const valueBtn = box.querySelector("[data-weight-value]");
+      function write(n) {
+        ex.weight = n == null ? "" : formatWeight(n);
+        save();
+        paintWeight(box, ex);
+      }
+      dec.addEventListener("click", () => write(nudgeWeight(parseWeight(ex.weight), -1)));
+      inc.addEventListener("click", () => write(nudgeWeight(parseWeight(ex.weight), 1)));
+      valueBtn.addEventListener("click", () => {
+        if (box.querySelector(".weight-input")) return;
+        const input = document.createElement("input");
+        input.className = "weight-input";
+        input.inputMode = "decimal";
+        input.enterKeyHint = "done";
+        input.setAttribute("aria-label", "Вес, кг");
+        const current = parseWeight(ex.weight);
+        input.value = current == null ? "" : formatWeight(current);
+        let cancel = false;
+        valueBtn.hidden = true;
+        valueBtn.after(input);
+        input.focus();
+        input.select();
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            input.blur();
+          } else if (event.key === "Escape") {
+            cancel = true;
+            input.blur();
+          }
+        });
+        input.addEventListener("blur", () => {
+          if (!cancel) write(parseWeight(input.value));
+          input.remove();
+          valueBtn.hidden = false;
+          paintWeight(box, ex);
+        });
+      });
+    });
+  }
+
   function layoutDeck(deck) {
+    syncRule(deck);
     if (reduceMotion) return;
     const cards = Array.from(deck.querySelectorAll(".lens-card"));
     if (!cards.length) return;
@@ -2168,6 +2412,7 @@ async function readProgramFile(file) {
     if (selectedDay >= workouts.length) selectedDay = 0;
     dayPage.innerHTML = renderDay(workouts[selectedDay]);
     bindImages(dayPage);
+    bindWeights(dayPage);
     bindDecks(dayPage);
     requestAnimationFrame(() => {
       dayPage.querySelectorAll("[data-deck]").forEach(layoutDeck);

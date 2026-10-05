@@ -90,6 +90,32 @@ function schemeOf(ex) {
   return parseScheme(ex.scheme || (ex.sets != null ? `${ex.sets}${ex.reps ? "×" + ex.reps : ""}` : ""));
 }
 
+function parseWeight(value) {
+  const text = String(value ?? "").trim().replace(",", ".");
+  const match = text.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.round(n * 100) / 100;
+}
+
+function formatWeight(n) {
+  return String(Math.round(n * 100) / 100).replace(".", ",");
+}
+
+function weightControl(ex, source) {
+  const n = parseWeight(ex.weight);
+  const shown = n == null ? "Указать" : formatWeight(n);
+  return `<div class="weight${n == null ? " is-empty" : ""}" data-weight="${source}">
+    <span class="weight-label">Вес</span>
+    <span class="weight-step">
+      <button class="weight-arrow" type="button" data-weight-dec aria-label="Меньше на 0,5 кг">←</button>
+      <button class="weight-value" type="button" data-weight-value>${esc(shown)}</button>
+      <button class="weight-arrow" type="button" data-weight-inc aria-label="Больше на 0,5 кг">→</button>
+    </span>
+  </div>`;
+}
+
 function partOf(ex) {
   const name = String((ex && ex.name) || "").toLowerCase().replace(/ё/g, "е");
   const section = String((ex && ex.section) || "").toLowerCase().replace(/ё/g, "е");
@@ -100,7 +126,7 @@ function partOf(ex) {
   return "";
 }
 
-function exerciseHtml(ex, index, total) {
+function exerciseHtml(ex, index, total, source) {
   const ids = muscleIds(ex);
   const label = muscleLabel(ex);
   const scheme = schemeOf(ex);
@@ -108,13 +134,12 @@ function exerciseHtml(ex, index, total) {
   if (scheme.kind === "simple") bits.push(plural(scheme.n, "подход", "подхода", "подходов"));
   const rir = cleanMeta(ex.rir);
   const rest = cleanMeta(ex.rest);
-  const weight = cleanMeta(ex.weight);
-  if (weight) bits.push("вес " + weight);
   if (rir) bits.push("RIR " + rir);
   if (rest) bits.push("отдых " + rest);
   const prescription = scheme.kind === "simple"
     ? `<p class="prescription"><span class="n">${esc(String(scheme.n))}</span><span class="r">× ${esc(scheme.reps)}</span></p>`
     : (scheme.kind === "block" ? `<p class="scheme">${esc(scheme.text)}</p>` : "");
+  const dose = `<div class="dose">${prescription}${weightControl(ex, source)}</div>`;
   const part = partOf(ex);
   const kicker = [ex.section, total ? `${index + 1} / ${total}` : ""].filter(Boolean).join(" · ");
   const plainTop = scheme.kind === "block" ? scheme.text : (scheme.kind === "simple" ? `${scheme.n} × ${scheme.reps}` : (ex.section || ""));
@@ -127,34 +152,41 @@ function exerciseHtml(ex, index, total) {
       ${kicker ? `<p class="lens-kicker"${part ? ` data-part="${part}"` : ""}>${esc(kicker)}</p>` : ""}
       <h2>${esc(ex.name || "Упражнение")}</h2>
       ${label ? `<p class="muscle">${esc(label)}</p>` : ""}
-      ${prescription}
+      ${dose}
       ${bits.length ? `<p class="word">${esc(bits.join(" · "))}</p>` : ""}
       ${spoiler(ex)}
     </div>
   </article>`;
 }
 
-function deckHtml(exercises) {
+function exerciseItems(workout) {
+  return (workout.exercises || [])
+    .map((ex, source) => ({ ex, source }))
+    .filter((item) => item.ex && typeof item.ex === "object" && item.ex.name);
+}
+
+function deckHtml(items) {
   const arrow = `<button class="deck-next" type="button" aria-label="Следующая карточка"><svg viewBox="0 0 88 16" aria-hidden="true"><path d="M2 8 H74"/><path d="M66 2 L78 8 L66 14"/></svg></button>`;
-  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div>${arrow}</div>`;
+  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${items.map((item, index) => exerciseHtml(item.ex, index, items.length, item.source)).join("")}</div>${arrow}</div>`;
 }
 
 function renderDay(workout) {
   if (!workout) return "";
-  const exercises = (workout.exercises || []).filter((ex) => ex && typeof ex === "object" && ex.name);
+  const items = exerciseItems(workout);
   const notes = typeof workout.text === "string"
     ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
     : "";
   const title = `<h2 class="day-title">${esc(workout.title || "День")}</h2>`;
   const dayPart = partOf({ name: workout.title, section: "" });
   const noteBlock = notes ? `<div class="note-block"${dayPart ? ` data-part="${dayPart}"` : ""}>${notes}</div>` : "";
-  const cards = exercises.length ? deckHtml(exercises) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
+  const cards = items.length ? deckHtml(items) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
   return title + noteBlock + cards;
 }
 
 function renderChapters(program) {
   return program.workouts.map((workout, index) => {
-    const exercises = workout.exercises.filter((ex) => ex && typeof ex === "object" && ex.name);
+    const items = exerciseItems(workout);
+    const exercises = items.map((item) => item.ex);
     const totalSets = exercises.reduce((sum, ex) => sum + setsCount(ex), 0);
     const bits = [`${exercises.length} ${plural(exercises.length, "упражнение", "упражнения", "упражнений")}`];
     if (totalSets) bits.push(`${totalSets} ${plural(totalSets, "подход", "подхода", "подходов")}`);
@@ -165,7 +197,7 @@ function renderChapters(program) {
       ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
       : "";
     const body = exercises.length
-      ? deckHtml(exercises)
+      ? deckHtml(items)
       : (notes ? "" : `<p class="info">В этой тренировке пока нет упражнений.</p>`);
     const count = exercises.length ? bits.join(" · ") : "";
     return `<article class="chapter">

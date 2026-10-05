@@ -198,7 +198,116 @@
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  function partColor(part) {
+    if (part === "warm") return "#2fbf4f";
+    if (part === "cool" || part === "cardio") return "#e23d3d";
+    return "#f5c400";
+  }
+
+  function syncRule(deck) {
+    const cover = document.querySelector(".cover");
+    if (!cover) return;
+    const cards = deck ? Array.from(deck.querySelectorAll(".lens-card")) : [];
+    if (!cards.length) {
+      cover.style.setProperty("--rule", "#f5c400");
+      cover.style.setProperty("--rule-b", "#f5c400");
+      cover.style.setProperty("--mix", "0%");
+      return;
+    }
+    const view = deck.getBoundingClientRect();
+    const center = view.left + view.width / 2;
+    const points = cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+      return { color: partColor(card.dataset.part), x: rect.left + rect.width / 2 };
+    }).sort((a, b) => a.x - b.x);
+    let left = points[0];
+    let right = points[0];
+    if (center <= points[0].x) {
+      left = right = points[0];
+    } else if (center >= points[points.length - 1].x) {
+      left = right = points[points.length - 1];
+    } else {
+      for (let i = 0; i < points.length - 1; i++) {
+        if (points[i].x <= center && points[i + 1].x >= center) {
+          left = points[i];
+          right = points[i + 1];
+          break;
+        }
+      }
+    }
+    const span = right.x - left.x;
+    const mix = span > 1 ? ((center - left.x) / span) * 100 : 0;
+    cover.style.setProperty("--rule", left.color);
+    cover.style.setProperty("--rule-b", right.color);
+    cover.style.setProperty("--mix", Math.round(mix * 10) / 10 + "%");
+  }
+
+  function nudgeWeight(current, dir) {
+    if (current == null) return dir > 0 ? 0.5 : null;
+    const next = Math.round((current + dir * 0.5) * 100) / 100;
+    return next < 0.5 ? null : next;
+  }
+
+  function paintWeight(box, ex) {
+    const valueBtn = box.querySelector("[data-weight-value]");
+    if (!valueBtn) return;
+    const n = parseWeight(ex.weight);
+    box.classList.toggle("is-empty", n == null);
+    valueBtn.textContent = n == null ? "Указать" : formatWeight(n);
+  }
+
+  function bindWeights(root) {
+    const workout = program && program.workouts && program.workouts[selectedDay];
+    if (!workout) return;
+    root.querySelectorAll("[data-weight]").forEach((box) => {
+      const source = Number(box.dataset.weight);
+      const ex = workout.exercises && workout.exercises[source];
+      if (!ex) return;
+      const dec = box.querySelector("[data-weight-dec]");
+      const inc = box.querySelector("[data-weight-inc]");
+      const valueBtn = box.querySelector("[data-weight-value]");
+      function write(n) {
+        ex.weight = n == null ? "" : formatWeight(n);
+        save();
+        paintWeight(box, ex);
+      }
+      dec.addEventListener("click", () => write(nudgeWeight(parseWeight(ex.weight), -1)));
+      inc.addEventListener("click", () => write(nudgeWeight(parseWeight(ex.weight), 1)));
+      valueBtn.addEventListener("click", () => {
+        if (box.querySelector(".weight-input")) return;
+        const input = document.createElement("input");
+        input.className = "weight-input";
+        input.inputMode = "decimal";
+        input.enterKeyHint = "done";
+        input.setAttribute("aria-label", "Вес, кг");
+        const current = parseWeight(ex.weight);
+        input.value = current == null ? "" : formatWeight(current);
+        let cancel = false;
+        valueBtn.hidden = true;
+        valueBtn.after(input);
+        input.focus();
+        input.select();
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            input.blur();
+          } else if (event.key === "Escape") {
+            cancel = true;
+            input.blur();
+          }
+        });
+        input.addEventListener("blur", () => {
+          if (!cancel) write(parseWeight(input.value));
+          input.remove();
+          valueBtn.hidden = false;
+          paintWeight(box, ex);
+        });
+      });
+    });
+  }
+
   function layoutDeck(deck) {
+    syncRule(deck);
     if (reduceMotion) return;
     const cards = Array.from(deck.querySelectorAll(".lens-card"));
     if (!cards.length) return;
@@ -287,6 +396,7 @@
     if (selectedDay >= workouts.length) selectedDay = 0;
     dayPage.innerHTML = renderDay(workouts[selectedDay]);
     bindImages(dayPage);
+    bindWeights(dayPage);
     bindDecks(dayPage);
     requestAnimationFrame(() => {
       dayPage.querySelectorAll("[data-deck]").forEach(layoutDeck);
