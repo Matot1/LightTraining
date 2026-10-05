@@ -22,10 +22,10 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#a9a093">
+<meta name="theme-color" content="#070d1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Heft">
 <title>Heft</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -52,7 +52,10 @@ ${css}
     <p class="brand">Heft</p>
     <button id="edit" class="corner" type="button">Изменить</button>
   </div>
-  <nav id="days" class="days"></nav>
+  <div class="days-wrap">
+    <nav id="days" class="days"></nav>
+    <div class="days-scroll" id="days-scroll" hidden><span id="days-thumb"></span></div>
+  </div>
   <header class="cover">
     <h1 id="book-title">${api.esc(program.title || "Тренировки")}</h1>
     <p class="subtitle" id="book-sub">${api.esc(program.subtitle || "")}</p>

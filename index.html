@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#a9a093">
+<meta name="theme-color" content="#070d1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Heft">
 <title>Heft</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -15,16 +15,19 @@
 <link rel="apple-touch-startup-image" href="./splash.png">
 <style>
 :root {
-  color-scheme: light;
-  --bg: #a9a093;
-  --ink: #615569;
-  --muted: #7a7084;
-  --gold: #615569;
-  --sun: #ffe14a;
-  --panel: #b7aea0;
-  --sheet: #c4baad;
-  --line: rgba(97, 85, 105, 0.28);
-  --soft: rgba(97, 85, 105, 0.08);
+  color-scheme: dark;
+  --bg: #070d1a;
+  --ink: #ffffff;
+  --muted: rgba(255, 255, 255, 0.62);
+  --gold: #f5c400;
+  --sun: #f5c400;
+  --warm: #2fbf4f;
+  --main: #f5c400;
+  --cool: #e23d3d;
+  --panel: #070d1a;
+  --sheet: #000000;
+  --line: rgba(255, 255, 255, 0.16);
+  --soft: rgba(255, 255, 255, 0.06);
   --font: "Avenir Next", "Avenir Next Demi Bold", sans-serif;
   interpolate-size: allow-keywords;
 }
@@ -36,7 +39,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--bg) url("./images/background.png") center / cover no-repeat;
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
   font-weight: 500;
@@ -159,15 +162,36 @@ body.is-editing .editor { display: block; }
   font-weight: 600;
 }
 
+.days-wrap { margin: -6px 0 18px; }
+
 .days {
   display: flex;
   gap: 8px;
-  margin: -6px 0 18px;
+  margin: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
 .days::-webkit-scrollbar { display: none; }
+
+.days-scroll {
+  position: relative;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.days-scroll[hidden] { display: none; }
+
+.days-scroll span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 99px;
+  background: #fff;
+}
 
 .day {
   flex: 0 0 auto;
@@ -181,7 +205,7 @@ body.is-editing .editor { display: block; }
 }
 
 .day.on {
-  background: var(--ink);
+  background: #fff;
   color: var(--bg);
 }
 
@@ -413,9 +437,15 @@ details[open] > summary .mark {
   min-height: 420px;
   overflow: hidden;
   scroll-snap-align: center;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
 }
+
+.lens-card[data-part="warm"] { border-color: var(--warm); }
+.lens-card[data-part="main"] { border-color: var(--main); }
+.lens-card[data-part="cool"],
+.lens-card[data-part="cardio"] { border-color: var(--cool); }
 
 .lens-top {
   display: flex;
@@ -443,8 +473,9 @@ details[open] > summary .mark {
   height: 100%;
   padding: 16px 16px 28px;
   overflow: auto;
-  background: var(--sheet);
-  border-top: 1px solid var(--line);
+  background: #000;
+  color: #fff;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   transform: translateY(calc(var(--top) * -1));
 }
 
@@ -454,17 +485,37 @@ details[open] > summary .mark {
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: #fff;
 }
 
-.deck-hint {
-  margin: 8px 0 0;
-  text-align: center;
-  font-family: var(--font);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+.lens-kicker[data-part="warm"] { color: var(--warm); }
+.lens-kicker[data-part="main"] { color: var(--main); }
+.lens-kicker[data-part="cool"],
+.lens-kicker[data-part="cardio"] { color: var(--cool); }
+
+.deck-next {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 4px 0 2px;
+  border: 0;
+  background: none;
+  color: #fff;
+}
+
+.deck-next svg {
+  width: 76px;
+  height: 16px;
+  overflow: visible;
+}
+
+.deck-next path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .section-label {
@@ -478,6 +529,18 @@ details[open] > summary .mark {
 }
 
 .section-label:first-child { margin-top: 0; }
+
+.note-block {
+  margin: 0 0 14px;
+  padding: 14px 16px 2px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+}
+
+.note-block[data-part="warm"] { border-color: var(--warm); }
+.note-block[data-part="main"] { border-color: var(--main); }
+.note-block[data-part="cool"],
+.note-block[data-part="cardio"] { border-color: var(--cool); }
 
 .note {
   margin: 0 0 12px;
@@ -521,11 +584,15 @@ details[open] > summary .mark {
   color: var(--muted);
 }
 
-.atlas .skin { fill: #cfc6b8; }
-.atlas .outline { fill: none; stroke: var(--ink); stroke-width: 1.3; }
-.atlas .head { fill: #cfc6b8; stroke: var(--ink); stroke-width: 1.3; }
-.atlas .m { fill: #b3a898; }
-.atlas .m.on { fill: var(--ink); }
+.atlas .skin { fill: #141820; }
+.atlas .outline { fill: none; stroke: rgba(255, 255, 255, 0.72); stroke-width: 1.3; }
+.atlas .head { fill: #141820; stroke: rgba(255, 255, 255, 0.72); stroke-width: 1.3; }
+.atlas .m { fill: #2a3140; }
+.atlas .m.on { fill: #fff; }
+.lens-card[data-part="warm"] .atlas .m.on { fill: var(--warm); }
+.lens-card[data-part="main"] .atlas .m.on { fill: var(--main); }
+.lens-card[data-part="cool"] .atlas .m.on,
+.lens-card[data-part="cardio"] .atlas .m.on { fill: var(--cool); }
 
 .ex-copy { min-width: 0; padding-top: 2px; }
 
@@ -792,7 +859,10 @@ details[open] > summary .mark {
     <p class="brand">Heft</p>
     <button id="edit" class="corner" type="button">Изменить</button>
   </div>
-  <nav id="days" class="days"></nav>
+  <div class="days-wrap">
+    <nav id="days" class="days"></nav>
+    <div class="days-scroll" id="days-scroll" hidden><span id="days-thumb"></span></div>
+  </div>
   <header class="cover">
     <h1 id="book-title">Тренировки</h1>
     <p class="subtitle" id="book-sub">Программа хранится на телефоне</p>
@@ -1236,6 +1306,16 @@ function schemeOf(ex) {
   return parseScheme(ex.scheme || (ex.sets != null ? `${ex.sets}${ex.reps ? "×" + ex.reps : ""}` : ""));
 }
 
+function partOf(ex) {
+  const name = String((ex && ex.name) || "").toLowerCase().replace(/ё/g, "е");
+  const section = String((ex && ex.section) || "").toLowerCase().replace(/ё/g, "е");
+  if (name.includes("кардио") || section.includes("кардио")) return "cardio";
+  if (section.startsWith("размин")) return "warm";
+  if (section.startsWith("основ")) return "main";
+  if (section.startsWith("замин")) return "cool";
+  return "";
+}
+
 function exerciseHtml(ex, index, total) {
   const ids = muscleIds(ex);
   const label = muscleLabel(ex);
@@ -1251,15 +1331,16 @@ function exerciseHtml(ex, index, total) {
   const prescription = scheme.kind === "simple"
     ? `<p class="prescription"><span class="n">${esc(String(scheme.n))}</span><span class="r">× ${esc(scheme.reps)}</span></p>`
     : (scheme.kind === "block" ? `<p class="scheme">${esc(scheme.text)}</p>` : "");
+  const part = partOf(ex);
   const kicker = [ex.section, total ? `${index + 1} / ${total}` : ""].filter(Boolean).join(" · ");
   const plainTop = scheme.kind === "block" ? scheme.text : (scheme.kind === "simple" ? `${scheme.n} × ${scheme.reps}` : (ex.section || ""));
   const top = ids.length
     ? `<div class="lens-top">${atlasSvg(ids)}</div>`
     : `<div class="lens-top lens-top-plain"><p>${esc(plainTop)}</p></div>`;
-  return `<article class="lens-card">
+  return `<article class="lens-card"${part ? ` data-part="${part}"` : ""}>
     ${top}
     <div class="lens-body">
-      ${kicker ? `<p class="lens-kicker">${esc(kicker)}</p>` : ""}
+      ${kicker ? `<p class="lens-kicker"${part ? ` data-part="${part}"` : ""}>${esc(kicker)}</p>` : ""}
       <h2>${esc(ex.name || "Упражнение")}</h2>
       ${label ? `<p class="muscle">${esc(label)}</p>` : ""}
       ${prescription}
@@ -1270,7 +1351,8 @@ function exerciseHtml(ex, index, total) {
 }
 
 function deckHtml(exercises) {
-  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div></div><p class="deck-hint">Листай карточки вбок</p>`;
+  const arrow = `<button class="deck-next" type="button" aria-label="Следующая карточка"><svg viewBox="0 0 88 16" aria-hidden="true"><path d="M2 8 H74"/><path d="M66 2 L78 8 L66 14"/></svg></button>`;
+  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div>${arrow}</div>`;
 }
 
 function renderDay(workout) {
@@ -1280,8 +1362,10 @@ function renderDay(workout) {
     ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
     : "";
   const title = `<h2 class="day-title">${esc(workout.title || "День")}</h2>`;
+  const dayPart = partOf({ name: workout.title, section: "" });
+  const noteBlock = notes ? `<div class="note-block"${dayPart ? ` data-part="${dayPart}"` : ""}>${notes}</div>` : "";
   const cards = exercises.length ? deckHtml(exercises) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
-  return title + notes + cards;
+  return title + noteBlock + cards;
 }
 
 function renderChapters(program) {
@@ -1741,6 +1825,8 @@ async function readProgramFile(file) {
 (function () {
   const dayPage = document.getElementById("day-page");
   const daysEl = document.getElementById("days");
+  const daysScroll = document.getElementById("days-scroll");
+  const daysThumb = document.getElementById("days-thumb");
   const addDayBtn = document.getElementById("add-day");
   const titleEl = document.getElementById("book-title");
   const subEl = document.getElementById("book-sub");
@@ -1887,6 +1973,17 @@ async function readProgramFile(file) {
       if (deck.dataset.bound === "1") return;
       deck.dataset.bound = "1";
       deck.addEventListener("scroll", () => layoutDeck(deck), { passive: true });
+      const next = deck.parentElement && deck.parentElement.querySelector(".deck-next");
+      if (next) {
+        next.addEventListener("click", () => {
+          const card = deck.querySelector(".lens-card");
+          if (!card) return;
+          const step = card.getBoundingClientRect().width + 20;
+          const max = deck.scrollWidth - deck.clientWidth;
+          const target = deck.scrollLeft >= max - 8 ? 0 : deck.scrollLeft + step;
+          deck.scrollTo({ left: target, behavior: "smooth" });
+        });
+      }
       deck.addEventListener("keydown", (event) => {
         const card = deck.querySelector(".lens-card");
         if (!card) return;
@@ -1897,6 +1994,18 @@ async function readProgramFile(file) {
       });
       layoutDeck(deck);
     });
+  }
+
+  function placeDaysThumb() {
+    if (!daysEl || !daysScroll || !daysThumb) return;
+    const overflow = daysEl.scrollWidth - daysEl.clientWidth;
+    daysScroll.hidden = overflow <= 8;
+    if (overflow <= 8) return;
+    const width = Math.max(28, daysScroll.clientWidth * (daysEl.clientWidth / daysEl.scrollWidth));
+    const max = Math.max(0, daysScroll.clientWidth - width);
+    const left = (daysEl.scrollLeft / overflow) * max;
+    daysThumb.style.width = width + "px";
+    daysThumb.style.transform = "translateX(" + left + "px)";
   }
 
   function renderDayButtons() {
@@ -1913,6 +2022,7 @@ async function readProgramFile(file) {
       });
       daysEl.append(button);
     });
+    requestAnimationFrame(placeDaysThumb);
   }
 
   function showSelectedDay() {
@@ -1940,8 +2050,11 @@ async function readProgramFile(file) {
     showSelectedDay();
   }
 
+  daysEl.addEventListener("scroll", placeDaysThumb, { passive: true });
+
   window.addEventListener("resize", () => {
     dayPage.querySelectorAll("[data-deck]").forEach(layoutDeck);
+    placeDaysThumb();
   });
 
   try {

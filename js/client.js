@@ -1,6 +1,8 @@
 (function () {
   const dayPage = document.getElementById("day-page");
   const daysEl = document.getElementById("days");
+  const daysScroll = document.getElementById("days-scroll");
+  const daysThumb = document.getElementById("days-thumb");
   const addDayBtn = document.getElementById("add-day");
   const titleEl = document.getElementById("book-title");
   const subEl = document.getElementById("book-sub");
@@ -147,6 +149,17 @@
       if (deck.dataset.bound === "1") return;
       deck.dataset.bound = "1";
       deck.addEventListener("scroll", () => layoutDeck(deck), { passive: true });
+      const next = deck.parentElement && deck.parentElement.querySelector(".deck-next");
+      if (next) {
+        next.addEventListener("click", () => {
+          const card = deck.querySelector(".lens-card");
+          if (!card) return;
+          const step = card.getBoundingClientRect().width + 20;
+          const max = deck.scrollWidth - deck.clientWidth;
+          const target = deck.scrollLeft >= max - 8 ? 0 : deck.scrollLeft + step;
+          deck.scrollTo({ left: target, behavior: "smooth" });
+        });
+      }
       deck.addEventListener("keydown", (event) => {
         const card = deck.querySelector(".lens-card");
         if (!card) return;
@@ -157,6 +170,18 @@
       });
       layoutDeck(deck);
     });
+  }
+
+  function placeDaysThumb() {
+    if (!daysEl || !daysScroll || !daysThumb) return;
+    const overflow = daysEl.scrollWidth - daysEl.clientWidth;
+    daysScroll.hidden = overflow <= 8;
+    if (overflow <= 8) return;
+    const width = Math.max(28, daysScroll.clientWidth * (daysEl.clientWidth / daysEl.scrollWidth));
+    const max = Math.max(0, daysScroll.clientWidth - width);
+    const left = (daysEl.scrollLeft / overflow) * max;
+    daysThumb.style.width = width + "px";
+    daysThumb.style.transform = "translateX(" + left + "px)";
   }
 
   function renderDayButtons() {
@@ -173,6 +198,7 @@
       });
       daysEl.append(button);
     });
+    requestAnimationFrame(placeDaysThumb);
   }
 
   function showSelectedDay() {
@@ -200,8 +226,11 @@
     showSelectedDay();
   }
 
+  daysEl.addEventListener("scroll", placeDaysThumb, { passive: true });
+
   window.addEventListener("resize", () => {
     dayPage.querySelectorAll("[data-deck]").forEach(layoutDeck);
+    placeDaysThumb();
   });
 
   try {

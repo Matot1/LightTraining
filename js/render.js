@@ -90,6 +90,16 @@ function schemeOf(ex) {
   return parseScheme(ex.scheme || (ex.sets != null ? `${ex.sets}${ex.reps ? "×" + ex.reps : ""}` : ""));
 }
 
+function partOf(ex) {
+  const name = String((ex && ex.name) || "").toLowerCase().replace(/ё/g, "е");
+  const section = String((ex && ex.section) || "").toLowerCase().replace(/ё/g, "е");
+  if (name.includes("кардио") || section.includes("кардио")) return "cardio";
+  if (section.startsWith("размин")) return "warm";
+  if (section.startsWith("основ")) return "main";
+  if (section.startsWith("замин")) return "cool";
+  return "";
+}
+
 function exerciseHtml(ex, index, total) {
   const ids = muscleIds(ex);
   const label = muscleLabel(ex);
@@ -105,15 +115,16 @@ function exerciseHtml(ex, index, total) {
   const prescription = scheme.kind === "simple"
     ? `<p class="prescription"><span class="n">${esc(String(scheme.n))}</span><span class="r">× ${esc(scheme.reps)}</span></p>`
     : (scheme.kind === "block" ? `<p class="scheme">${esc(scheme.text)}</p>` : "");
+  const part = partOf(ex);
   const kicker = [ex.section, total ? `${index + 1} / ${total}` : ""].filter(Boolean).join(" · ");
   const plainTop = scheme.kind === "block" ? scheme.text : (scheme.kind === "simple" ? `${scheme.n} × ${scheme.reps}` : (ex.section || ""));
   const top = ids.length
     ? `<div class="lens-top">${atlasSvg(ids)}</div>`
     : `<div class="lens-top lens-top-plain"><p>${esc(plainTop)}</p></div>`;
-  return `<article class="lens-card">
+  return `<article class="lens-card"${part ? ` data-part="${part}"` : ""}>
     ${top}
     <div class="lens-body">
-      ${kicker ? `<p class="lens-kicker">${esc(kicker)}</p>` : ""}
+      ${kicker ? `<p class="lens-kicker"${part ? ` data-part="${part}"` : ""}>${esc(kicker)}</p>` : ""}
       <h2>${esc(ex.name || "Упражнение")}</h2>
       ${label ? `<p class="muscle">${esc(label)}</p>` : ""}
       ${prescription}
@@ -124,7 +135,8 @@ function exerciseHtml(ex, index, total) {
 }
 
 function deckHtml(exercises) {
-  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div></div><p class="deck-hint">Листай карточки вбок</p>`;
+  const arrow = `<button class="deck-next" type="button" aria-label="Следующая карточка"><svg viewBox="0 0 88 16" aria-hidden="true"><path d="M2 8 H74"/><path d="M66 2 L78 8 L66 14"/></svg></button>`;
+  return `<div class="deck-clip"><div class="deck" data-deck tabindex="0">${exercises.map((ex, index) => exerciseHtml(ex, index, exercises.length)).join("")}</div>${arrow}</div>`;
 }
 
 function renderDay(workout) {
@@ -134,8 +146,10 @@ function renderDay(workout) {
     ? workout.text.split(/\n+/).map((line) => line.trim()).filter(Boolean).map((line) => `<p class="note">${esc(line)}</p>`).join("")
     : "";
   const title = `<h2 class="day-title">${esc(workout.title || "День")}</h2>`;
+  const dayPart = partOf({ name: workout.title, section: "" });
+  const noteBlock = notes ? `<div class="note-block"${dayPart ? ` data-part="${dayPart}"` : ""}>${notes}</div>` : "";
   const cards = exercises.length ? deckHtml(exercises) : (notes ? "" : `<p class="info">В этом дне пока нет упражнений.</p>`);
-  return title + notes + cards;
+  return title + noteBlock + cards;
 }
 
 function renderChapters(program) {
