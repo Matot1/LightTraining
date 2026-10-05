@@ -39,7 +39,8 @@
     try { localStorage.setItem(KEY, JSON.stringify(program)); } catch (err) { /* private mode */ }
   }
 
-  function textField(label, value, onInput, tall, placeholder) {
+  function textField(label, value, onInput, tall, placeholder, extra) {
+    extra = extra || {};
     const wrap = document.createElement("label");
     wrap.className = "edit-field";
     const cap = document.createElement("span");
@@ -51,11 +52,25 @@
     box.rows = tall ? Math.min(8, Math.max(3, lines)) : Math.min(4, Math.max(1, lines));
     box.value = value || "";
     if (placeholder) box.placeholder = placeholder;
+    if (extra.max) box.maxLength = extra.max;
+    let prev = box.value;
     box.addEventListener("input", () => {
+      if (extra.max && box.value.length > extra.max) box.value = box.value.slice(0, extra.max);
+      if (extra.scheme && /^\d$/.test(box.value) && !prev.startsWith(box.value + "×")) {
+        box.value = box.value + "×";
+        box.setSelectionRange(box.value.length, box.value.length);
+      }
+      prev = box.value;
       onInput(box.value);
       save();
     });
     wrap.append(cap, box);
+    if (extra.hint) {
+      const hint = document.createElement("span");
+      hint.className = "edit-hint";
+      hint.textContent = extra.hint;
+      wrap.append(hint);
+    }
     return wrap;
   }
 
@@ -99,7 +114,7 @@
       group.className = "edit-group";
       group.append(
         textField("Тренировка", workout.title, (value) => { workout.title = value; }, false, "День 1"),
-        textField("Текст", workout.text || "", (value) => { workout.text = value; }, true, "Заметка к этому дню")
+        textField("Текст", workout.text || "", (value) => { workout.text = value; }, true, "Заметка к этому дню", { max: 128 })
       );
       workout.exercises.forEach((ex) => {
         if (!ex || typeof ex !== "object") return;
@@ -108,10 +123,12 @@
         block.append(
           textField("Упражнение", ex.name, (value) => { ex.name = value; }, false, "Название"),
           textField("Раздел", ex.section, (value) => { ex.section = value; }, false, "Разминка, Основная часть, Заминка, Кардио"),
-          textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }, false, "3×10"),
-          textField("Мышцы", ex.muscleLabel, (value) => { ex.muscleLabel = value; }),
-          textField("RIR", ex.rir, (value) => { ex.rir = value; }),
-          textField("Отдых", ex.rest, (value) => { ex.rest = value; }),
+          textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }, false, "3×10", { scheme: true }),
+          textField("Группа мышц", ex.muscleLabel, (value) => { ex.muscleLabel = value; }),
+          textField("RIR", ex.rir, (value) => { ex.rir = value; }, false, "2", {
+            hint: "Повторы в запасе: сколько раз ты ещё смог бы сделать упражнение. 2 значит, что остановился, но сил хватило бы ещё на два."
+          }),
+          textField("Отдых, сек", ex.rest, (value) => { ex.rest = value; }, false, "90"),
           textField("Вес", ex.weight, (value) => { ex.weight = value; })
         );
         group.append(block);
