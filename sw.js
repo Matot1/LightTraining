@@ -1,4 +1,4 @@
-const CACHE = "light-training-v11";
+const CACHE = "light-training-v12";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,7 +7,8 @@ const ASSETS = [
   "./images/background.png",
   "./icons/icon.svg",
   "./icons/icon-180.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./brand/heft-logo.svg"
 ];
 
 self.addEventListener("install", (event) => {

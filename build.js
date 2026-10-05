@@ -39,7 +39,7 @@ ${css}
 <body>
 <input id="file" class="file-pick" type="file">
 <div class="gate" id="gate">
-  <p class="gate-name">Heft</p>
+  <p class="gate-name"><img class="brand-mark" src="brand/heft-logo.svg" alt="Heft"></p>
   <label class="orb" for="file">
     <span>Загрузить</span>
     <span>программу</span>
@@ -52,7 +52,7 @@ ${css}
 </div>
 <div class="book">
   <div class="topbar">
-    <p class="brand">Heft</p>
+    <p class="brand"><img class="brand-mark" src="brand/heft-logo.svg" alt="Heft"></p>
     <button id="edit" class="corner" type="button">Изменить</button>
   </div>
   <div class="days-wrap">
@@ -73,7 +73,7 @@ ${css}
 </div>
 <div class="editor" id="editor">
   <div class="topbar">
-    <p class="brand">Heft</p>
+    <p class="brand"><img class="brand-mark" src="brand/heft-logo.svg" alt="Heft"></p>
     <button id="done" class="corner" type="button">Готово</button>
   </div>
   <div id="edit-fields"></div>
