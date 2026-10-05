@@ -73,7 +73,7 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   margin: 0;
   color: var(--ink);
   font-family: var(--font);
-  font-size: 28px;
+  font-size: 56px;
   font-weight: 600;
   letter-spacing: 0;
   text-align: center;
@@ -104,12 +104,19 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   cursor: pointer;
 }
 
-.gate-copy {
+.gate-stack {
   position: absolute;
   left: 50%;
   top: calc(50% + 128px);
   translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
   width: min(300px, calc(100% - 48px));
+}
+
+.gate-copy {
   margin: 0;
   color: var(--ink);
   font-size: 17px;
@@ -117,18 +124,28 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   text-align: center;
 }
 
+.gate-manual {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 14px 12px;
+  border: 1.5px solid #fff;
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font: 600 16px/1.25 var(--font);
+  text-align: center;
+}
+
 .gate .status {
-  position: absolute;
-  left: 50%;
-  top: calc(50% + 214px);
-  translate: -50% 0;
-  width: min(300px, calc(100% - 48px));
+  margin: 0;
   text-align: center;
 }
 
 .book { display: none; }
 
-body.has-program .gate { display: none; }
+body.has-program .gate,
+body.is-editing .gate { display: none; }
 
 body.has-program .book { display: block; }
 
@@ -158,7 +175,7 @@ body.is-editing .editor { display: block; }
 .brand {
   margin: 0;
   color: var(--ink);
-  font-size: 22px;
+  font-size: 44px;
   font-weight: 600;
 }
 
@@ -227,6 +244,29 @@ body.is-editing .editor { display: block; }
   color: var(--ink);
   font: 600 17px var(--font);
 }
+
+.edit-adds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+}
+
+.edit-add {
+  flex: 1 1 calc(50% - 8px);
+  margin: 0;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font: 600 14px/1.2 var(--font);
+}
+
+.edit-add[data-part="warm"] { border-color: var(--warm); color: var(--warm); }
+.edit-add[data-part="main"] { border-color: var(--main); color: var(--main); }
+.edit-add[data-part="cool"],
+.edit-add[data-part="cardio"] { border-color: var(--cool); color: var(--cool); }
 
 .corner {
   margin: 0;
@@ -851,8 +891,11 @@ details[open] > summary .mark {
     <span>Загрузить</span>
     <span>программу</span>
   </label>
-  <p class="gate-copy">Она проанализирует ваш файл тренировки и составит расписание и шаги.</p>
-  <p class="status" data-status></p>
+  <div class="gate-stack">
+    <p class="gate-copy">Она проанализирует ваш файл тренировки и составит расписание и шаги.</p>
+    <button id="manual" class="gate-manual" type="button">Добавить тренировки вручную</button>
+    <p class="status" data-status></p>
+  </div>
 </div>
 <div class="book">
   <div class="topbar">
@@ -1830,6 +1873,7 @@ async function readProgramFile(file) {
   const addDayBtn = document.getElementById("add-day");
   const titleEl = document.getElementById("book-title");
   const subEl = document.getElementById("book-sub");
+  const manualBtn = document.getElementById("manual");
   const fileInput = document.getElementById("file");
   const resetBtn = document.getElementById("reset");
   const editBtn = document.getElementById("edit");
@@ -1862,7 +1906,7 @@ async function readProgramFile(file) {
     try { localStorage.setItem(KEY, JSON.stringify(program)); } catch (err) { /* private mode */ }
   }
 
-  function textField(label, value, onInput, tall) {
+  function textField(label, value, onInput, tall, placeholder) {
     const wrap = document.createElement("label");
     wrap.className = "edit-field";
     const cap = document.createElement("span");
@@ -1871,8 +1915,9 @@ async function readProgramFile(file) {
     const box = document.createElement("textarea");
     box.className = "edit-box";
     const lines = String(value || "").split("\n").length;
-    box.rows = tall ? Math.min(8, Math.max(3, lines)) : Math.min(4, lines);
+    box.rows = tall ? Math.min(8, Math.max(3, lines)) : Math.min(4, Math.max(1, lines));
     box.value = value || "";
+    if (placeholder) box.placeholder = placeholder;
     box.addEventListener("input", () => {
       onInput(box.value);
       save();
@@ -1881,51 +1926,103 @@ async function readProgramFile(file) {
     return wrap;
   }
 
-  function filled(value) {
-    const text = typeof value === "string" ? value.trim() : "";
-    return text && text !== "—";
+  function blankExercise(section) {
+    return {
+      name: "",
+      section: section,
+      scheme: "",
+      muscleLabel: "",
+      rir: "",
+      rest: "",
+      weight: ""
+    };
   }
 
-  function openEditor() {
+  function blankDay(n) {
+    return {
+      title: "День " + n,
+      text: "",
+      exercises: [
+        blankExercise("Разминка"),
+        blankExercise("Основная часть"),
+        blankExercise("Заминка"),
+        blankExercise("Кардио")
+      ]
+    };
+  }
+
+  function openEditor(options) {
     if (!program) return;
+    const keepScroll = options && options.keepScroll;
+    const scrollY = window.scrollY;
     editFields.replaceChildren();
     editFields.append(
       textField("Имя", program.title, (value) => { program.title = value; }),
-      textField("Недели", program.subtitle, (value) => { program.subtitle = value; })
+      textField("Недели", program.subtitle, (value) => { program.subtitle = value; }, false, "6–8 недель")
     );
     program.workouts.forEach((workout) => {
+      if (!Array.isArray(workout.exercises)) workout.exercises = [];
       const group = document.createElement("section");
       group.className = "edit-group";
-      group.append(textField("Тренировка", workout.title, (value) => { workout.title = value; }));
-      if (typeof workout.text === "string") {
-        group.append(textField("Текст", workout.text, (value) => { workout.text = value; }, true));
-      }
-      (workout.exercises || []).forEach((ex) => {
+      group.append(
+        textField("Тренировка", workout.title, (value) => { workout.title = value; }, false, "День 1"),
+        textField("Текст", workout.text || "", (value) => { workout.text = value; }, true, "Заметка к этому дню")
+      );
+      workout.exercises.forEach((ex) => {
         if (!ex || typeof ex !== "object") return;
         const block = document.createElement("div");
         block.className = "edit-block";
-        block.append(textField("Упражнение", ex.name, (value) => { ex.name = value; }));
-        if (filled(ex.section)) block.append(textField("Раздел", ex.section, (value) => { ex.section = value; }));
-        if (filled(ex.scheme) || ex.name) block.append(textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }));
-        if (filled(ex.muscleLabel)) block.append(textField("Мышцы", ex.muscleLabel, (value) => { ex.muscleLabel = value; }));
-        if (filled(ex.rir)) block.append(textField("RIR", ex.rir, (value) => { ex.rir = value; }));
-        if (filled(ex.rest)) block.append(textField("Отдых", ex.rest, (value) => { ex.rest = value; }));
-        if (filled(ex.weight)) block.append(textField("Вес", ex.weight, (value) => { ex.weight = value; }));
+        block.append(
+          textField("Упражнение", ex.name, (value) => { ex.name = value; }, false, "Название"),
+          textField("Раздел", ex.section, (value) => { ex.section = value; }, false, "Разминка, Основная часть, Заминка, Кардио"),
+          textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }, false, "3×10"),
+          textField("Мышцы", ex.muscleLabel, (value) => { ex.muscleLabel = value; }),
+          textField("RIR", ex.rir, (value) => { ex.rir = value; }),
+          textField("Отдых", ex.rest, (value) => { ex.rest = value; }),
+          textField("Вес", ex.weight, (value) => { ex.weight = value; })
+        );
         group.append(block);
       });
+      const adds = document.createElement("div");
+      adds.className = "edit-adds";
+      [
+        ["+ Разминка", "Разминка", "warm"],
+        ["+ Основная часть", "Основная часть", "main"],
+        ["+ Заминка", "Заминка", "cool"],
+        ["+ Кардио", "Кардио", "cardio"]
+      ].forEach(([label, section, part]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "edit-add";
+        button.dataset.part = part;
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          workout.exercises.push(blankExercise(section));
+          save();
+          openEditor({ keepScroll: true });
+        });
+        adds.append(button);
+      });
+      group.append(adds);
       editFields.append(group);
     });
     document.body.classList.add("is-editing");
-    window.scrollTo(0, 0);
+    if (keepScroll) window.scrollTo(0, scrollY);
+    else window.scrollTo(0, 0);
+  }
+
+  function startManual() {
+    if (!program) {
+      program = { title: "", subtitle: "", workouts: [blankDay(1)] };
+      selectedDay = 0;
+      save();
+    }
+    openEditor();
   }
 
   function addDay() {
     if (!program) return;
-    const n = program.workouts.length + 1;
-    program.workouts.push({
-      title: "День " + n,
-      exercises: [{ name: "Новое упражнение", scheme: "" }]
-    });
+    program.workouts.push(blankDay(program.workouts.length + 1));
     selectedDay = program.workouts.length - 1;
     save();
     openEditor();
@@ -1933,7 +2030,13 @@ async function readProgramFile(file) {
 
   function closeEditor() {
     document.body.classList.remove("is-editing");
-    if (program) paint(program);
+    if (program && validProgram(program)) {
+      save();
+      paint(program);
+      showBook();
+    } else {
+      showGate();
+    }
     window.scrollTo(0, 0);
   }
 
@@ -2098,6 +2201,7 @@ async function readProgramFile(file) {
     showGate();
   });
 
+  manualBtn.addEventListener("click", startManual);
   editBtn.addEventListener("click", openEditor);
   doneBtn.addEventListener("click", closeEditor);
   addDayBtn.addEventListener("click", addDay);

@@ -44,8 +44,11 @@ ${css}
     <span>Загрузить</span>
     <span>программу</span>
   </label>
-  <p class="gate-copy">Она проанализирует ваш файл тренировки и составит расписание и шаги.</p>
-  <p class="status" data-status></p>
+  <div class="gate-stack">
+    <p class="gate-copy">Она проанализирует ваш файл тренировки и составит расписание и шаги.</p>
+    <button id="manual" class="gate-manual" type="button">Добавить тренировки вручную</button>
+    <p class="status" data-status></p>
+  </div>
 </div>
 <div class="book">
   <div class="topbar">

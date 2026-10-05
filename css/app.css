@@ -57,7 +57,7 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   margin: 0;
   color: var(--ink);
   font-family: var(--font);
-  font-size: 28px;
+  font-size: 56px;
   font-weight: 600;
   letter-spacing: 0;
   text-align: center;
@@ -88,12 +88,19 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   cursor: pointer;
 }
 
-.gate-copy {
+.gate-stack {
   position: absolute;
   left: 50%;
   top: calc(50% + 128px);
   translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
   width: min(300px, calc(100% - 48px));
+}
+
+.gate-copy {
   margin: 0;
   color: var(--ink);
   font-size: 17px;
@@ -101,18 +108,28 @@ button, summary, label { -webkit-tap-highlight-color: transparent; }
   text-align: center;
 }
 
+.gate-manual {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 14px 12px;
+  border: 1.5px solid #fff;
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font: 600 16px/1.25 var(--font);
+  text-align: center;
+}
+
 .gate .status {
-  position: absolute;
-  left: 50%;
-  top: calc(50% + 214px);
-  translate: -50% 0;
-  width: min(300px, calc(100% - 48px));
+  margin: 0;
   text-align: center;
 }
 
 .book { display: none; }
 
-body.has-program .gate { display: none; }
+body.has-program .gate,
+body.is-editing .gate { display: none; }
 
 body.has-program .book { display: block; }
 
@@ -142,7 +159,7 @@ body.is-editing .editor { display: block; }
 .brand {
   margin: 0;
   color: var(--ink);
-  font-size: 22px;
+  font-size: 44px;
   font-weight: 600;
 }
 
@@ -211,6 +228,29 @@ body.is-editing .editor { display: block; }
   color: var(--ink);
   font: 600 17px var(--font);
 }
+
+.edit-adds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+}
+
+.edit-add {
+  flex: 1 1 calc(50% - 8px);
+  margin: 0;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font: 600 14px/1.2 var(--font);
+}
+
+.edit-add[data-part="warm"] { border-color: var(--warm); color: var(--warm); }
+.edit-add[data-part="main"] { border-color: var(--main); color: var(--main); }
+.edit-add[data-part="cool"],
+.edit-add[data-part="cardio"] { border-color: var(--cool); color: var(--cool); }
 
 .corner {
   margin: 0;

@@ -6,6 +6,7 @@
   const addDayBtn = document.getElementById("add-day");
   const titleEl = document.getElementById("book-title");
   const subEl = document.getElementById("book-sub");
+  const manualBtn = document.getElementById("manual");
   const fileInput = document.getElementById("file");
   const resetBtn = document.getElementById("reset");
   const editBtn = document.getElementById("edit");
@@ -38,7 +39,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(program)); } catch (err) { /* private mode */ }
   }
 
-  function textField(label, value, onInput, tall) {
+  function textField(label, value, onInput, tall, placeholder) {
     const wrap = document.createElement("label");
     wrap.className = "edit-field";
     const cap = document.createElement("span");
@@ -47,8 +48,9 @@
     const box = document.createElement("textarea");
     box.className = "edit-box";
     const lines = String(value || "").split("\n").length;
-    box.rows = tall ? Math.min(8, Math.max(3, lines)) : Math.min(4, lines);
+    box.rows = tall ? Math.min(8, Math.max(3, lines)) : Math.min(4, Math.max(1, lines));
     box.value = value || "";
+    if (placeholder) box.placeholder = placeholder;
     box.addEventListener("input", () => {
       onInput(box.value);
       save();
@@ -57,51 +59,103 @@
     return wrap;
   }
 
-  function filled(value) {
-    const text = typeof value === "string" ? value.trim() : "";
-    return text && text !== "—";
+  function blankExercise(section) {
+    return {
+      name: "",
+      section: section,
+      scheme: "",
+      muscleLabel: "",
+      rir: "",
+      rest: "",
+      weight: ""
+    };
   }
 
-  function openEditor() {
+  function blankDay(n) {
+    return {
+      title: "День " + n,
+      text: "",
+      exercises: [
+        blankExercise("Разминка"),
+        blankExercise("Основная часть"),
+        blankExercise("Заминка"),
+        blankExercise("Кардио")
+      ]
+    };
+  }
+
+  function openEditor(options) {
     if (!program) return;
+    const keepScroll = options && options.keepScroll;
+    const scrollY = window.scrollY;
     editFields.replaceChildren();
     editFields.append(
       textField("Имя", program.title, (value) => { program.title = value; }),
-      textField("Недели", program.subtitle, (value) => { program.subtitle = value; })
+      textField("Недели", program.subtitle, (value) => { program.subtitle = value; }, false, "6–8 недель")
     );
     program.workouts.forEach((workout) => {
+      if (!Array.isArray(workout.exercises)) workout.exercises = [];
       const group = document.createElement("section");
       group.className = "edit-group";
-      group.append(textField("Тренировка", workout.title, (value) => { workout.title = value; }));
-      if (typeof workout.text === "string") {
-        group.append(textField("Текст", workout.text, (value) => { workout.text = value; }, true));
-      }
-      (workout.exercises || []).forEach((ex) => {
+      group.append(
+        textField("Тренировка", workout.title, (value) => { workout.title = value; }, false, "День 1"),
+        textField("Текст", workout.text || "", (value) => { workout.text = value; }, true, "Заметка к этому дню")
+      );
+      workout.exercises.forEach((ex) => {
         if (!ex || typeof ex !== "object") return;
         const block = document.createElement("div");
         block.className = "edit-block";
-        block.append(textField("Упражнение", ex.name, (value) => { ex.name = value; }));
-        if (filled(ex.section)) block.append(textField("Раздел", ex.section, (value) => { ex.section = value; }));
-        if (filled(ex.scheme) || ex.name) block.append(textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }));
-        if (filled(ex.muscleLabel)) block.append(textField("Мышцы", ex.muscleLabel, (value) => { ex.muscleLabel = value; }));
-        if (filled(ex.rir)) block.append(textField("RIR", ex.rir, (value) => { ex.rir = value; }));
-        if (filled(ex.rest)) block.append(textField("Отдых", ex.rest, (value) => { ex.rest = value; }));
-        if (filled(ex.weight)) block.append(textField("Вес", ex.weight, (value) => { ex.weight = value; }));
+        block.append(
+          textField("Упражнение", ex.name, (value) => { ex.name = value; }, false, "Название"),
+          textField("Раздел", ex.section, (value) => { ex.section = value; }, false, "Разминка, Основная часть, Заминка, Кардио"),
+          textField("Подходы", ex.scheme, (value) => { ex.scheme = value; }, false, "3×10"),
+          textField("Мышцы", ex.muscleLabel, (value) => { ex.muscleLabel = value; }),
+          textField("RIR", ex.rir, (value) => { ex.rir = value; }),
+          textField("Отдых", ex.rest, (value) => { ex.rest = value; }),
+          textField("Вес", ex.weight, (value) => { ex.weight = value; })
+        );
         group.append(block);
       });
+      const adds = document.createElement("div");
+      adds.className = "edit-adds";
+      [
+        ["+ Разминка", "Разминка", "warm"],
+        ["+ Основная часть", "Основная часть", "main"],
+        ["+ Заминка", "Заминка", "cool"],
+        ["+ Кардио", "Кардио", "cardio"]
+      ].forEach(([label, section, part]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "edit-add";
+        button.dataset.part = part;
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          workout.exercises.push(blankExercise(section));
+          save();
+          openEditor({ keepScroll: true });
+        });
+        adds.append(button);
+      });
+      group.append(adds);
       editFields.append(group);
     });
     document.body.classList.add("is-editing");
-    window.scrollTo(0, 0);
+    if (keepScroll) window.scrollTo(0, scrollY);
+    else window.scrollTo(0, 0);
+  }
+
+  function startManual() {
+    if (!program) {
+      program = { title: "", subtitle: "", workouts: [blankDay(1)] };
+      selectedDay = 0;
+      save();
+    }
+    openEditor();
   }
 
   function addDay() {
     if (!program) return;
-    const n = program.workouts.length + 1;
-    program.workouts.push({
-      title: "День " + n,
-      exercises: [{ name: "Новое упражнение", scheme: "" }]
-    });
+    program.workouts.push(blankDay(program.workouts.length + 1));
     selectedDay = program.workouts.length - 1;
     save();
     openEditor();
@@ -109,7 +163,13 @@
 
   function closeEditor() {
     document.body.classList.remove("is-editing");
-    if (program) paint(program);
+    if (program && validProgram(program)) {
+      save();
+      paint(program);
+      showBook();
+    } else {
+      showGate();
+    }
     window.scrollTo(0, 0);
   }
 
@@ -274,6 +334,7 @@
     showGate();
   });
 
+  manualBtn.addEventListener("click", startManual);
   editBtn.addEventListener("click", openEditor);
   doneBtn.addEventListener("click", closeEditor);
   addDayBtn.addEventListener("click", addDay);
