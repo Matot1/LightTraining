@@ -339,6 +339,13 @@ body.is-editing .editor { display: block; }
     calc(96px + env(safe-area-inset-bottom));
 }
 
+#day-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 340px);
+  min-height: 320px;
+}
+
 .timer-bar {
   position: fixed;
   left: 50%;
@@ -514,18 +521,26 @@ details[open] > summary .mark {
 
 .deck-clip {
   container-type: inline-size;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   margin: 4px -22px 0;
 }
 
 .deck {
   display: flex;
+  flex: 1 1 auto;
   gap: 20px;
+  align-items: stretch;
+  min-height: 0;
   padding: 4px 30px 8px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 30px;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  touch-action: pan-x;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -537,9 +552,9 @@ details[open] > summary .mark {
   --top: 188px;
   position: relative;
   flex: 0 0 calc(100cqi - 60px);
-  height: min(520px, calc(100dvh - 400px));
-  min-height: 280px;
+  min-height: 0;
   overflow: hidden;
+  touch-action: pan-x;
   scroll-snap-align: center;
   background: #000;
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -578,6 +593,7 @@ details[open] > summary .mark {
   padding: 16px 16px 28px;
   overflow: auto;
   background: #000;
+  touch-action: pan-x;
   color: #fff;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   transform: translateY(calc(var(--top) * -1));
