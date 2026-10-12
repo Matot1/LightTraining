@@ -230,8 +230,8 @@ body.is-editing .editor { display: block; }
 }
 
 .day-title {
-  margin: 0 0 12px;
-  font-size: 28px;
+  margin: 0 0 8px;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.1;
 }
@@ -336,7 +336,52 @@ body.is-editing .editor { display: block; }
   padding:
     calc(28px + env(safe-area-inset-top))
     22px
-    calc(32px + env(safe-area-inset-bottom));
+    calc(96px + env(safe-area-inset-bottom));
+}
+
+.timer-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 5;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(480px, 100%);
+  padding: 12px 22px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.timer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.timer-btn {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1.5px solid #fff;
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font: 600 14px/1.1 var(--font);
+}
+
+.timer-btn.is-on {
+  background: #fff;
+  color: var(--bg);
+}
+
+.timer-readout {
+  margin: 0;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 .kicker {
@@ -492,8 +537,8 @@ details[open] > summary .mark {
   --top: 188px;
   position: relative;
   flex: 0 0 calc(100cqi - 60px);
-  height: min(520px, 68vh);
-  min-height: 420px;
+  height: min(520px, calc(100dvh - 400px));
+  min-height: 280px;
   overflow: hidden;
   scroll-snap-align: center;
   background: #000;
@@ -1011,10 +1056,17 @@ details[open] > summary .mark {
     <div class="days-scroll" id="days-scroll" hidden><span id="days-thumb"></span></div>
   </div>
   <header class="cover">
-    <h1 id="book-title">Александр</h1>
-    <p class="subtitle" id="book-sub">6–8 недель</p>
+    <h1 id="book-title">Тренировки</h1>
+    <p class="subtitle" id="book-sub">Программа хранится на телефоне</p>
   </header>
   <main id="day-page"></main>
+  <div class="timer-bar" id="timer-bar">
+    <div class="timer-actions">
+      <button id="timer-toggle" class="timer-btn" type="button">Старт</button>
+      <button id="timer-reset" class="timer-btn" type="button">Стоп</button>
+    </div>
+    <p class="timer-readout" id="timer-readout">00:00</p>
+  </div>
   <footer class="colophon">
     <label class="load" for="file">Загрузить программу</label>
     <button id="reset" class="linkish" type="button" hidden>Убрать программу</button>
@@ -1030,7 +1082,7 @@ details[open] > summary .mark {
   <div id="edit-fields"></div>
   <button id="add-day" class="add-day" type="button">Добавить день</button>
 </div>
-<script type="application/json" id="default-program">{"title":"Александр","subtitle":"6–8 недель","workouts":[{"title":"Тренировка 1","exercises":[{"section":"Разминка","name":"Асимметричная ротация плеча с поворотом головы","scheme":"1×20","rir":"—","rest":"—","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Разминка","name":"Ротация манжеты плеча стоя спиной к стене","scheme":"1×20","rir":"—","rest":"—","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Разминка","name":"Ротация грудного отдела сидя в положении 90-90","scheme":"1×10 на сторону","rir":"—","rest":"—","muscle":"back","muscleLabel":"Грудной отдел"},{"section":"Разминка","name":"Dead bug с упором в противоположное бедро, лёжа на спине","scheme":"3×10 на сторону","rir":"—","rest":"60 сек","muscle":"abs","muscleLabel":"Пресс"},{"section":"Основная часть","name":"Горизонтальная тяга широким хватом","scheme":"1×20 разм.\n+ 4×10","rir":"2","rest":"90 сек","muscle":"back","muscleLabel":"Спина"},{"section":"Основная часть","name":"Гоблет-присед с гирей","scheme":"1×12 разм.\n+ 4×12","rir":"4-2","rest":"120 сек","muscle":"quads","muscleLabel":"Квадрицепс"},{"section":"Основная часть","name":"Горизонтальная тяга каната с верхнего блока с ротацией плеча","scheme":"3×15","rir":"3","rest":"60 сек","muscle":"back","muscleLabel":"Спина"},{"section":"Основная часть","name":"Сгибание голени сидя","scheme":"4×12","rir":"2","rest":"90 сек","muscle":"hamstrings","muscleLabel":"Бицепс бедра"},{"section":"Основная часть","name":"Вертикальная тяга широким хватом","scheme":"4×10","rir":"2","rest":"90 сек","muscle":"back","muscleLabel":"Спина"},{"section":"Основная часть","name":"Горизонтальное отведение бедра в тренажёре","scheme":"1×20 разм.\n+ 3×12","rir":"3-2","rest":"90 сек","muscle":"glutes","muscleLabel":"Ягодицы"},{"section":"Основная часть","name":"Сгибание рук со штангой обратным хватом","scheme":"4×12","rir":"2","rest":"90 сек","muscle":"biceps","muscleLabel":"Бицепс"},{"section":"Заминка","name":"Лёгкая растяжка задней цепи","scheme":"","rir":"—","rest":"—","muscle":"hamstrings","muscleLabel":"Задняя цепь"},{"section":"Заминка","name":"Кардио, любой тренажёр, пульс до 130 уд/мин","scheme":"10 мин","rir":"—","rest":"—"}]},{"title":"Тренировка 2","exercises":[{"section":"Разминка","name":"Отведение бедра из положения 90-90","scheme":"1×20","rir":"—","rest":"—","muscle":"glutes","muscleLabel":"Ягодицы"},{"section":"Разминка","name":"Вытяжение сгибателя бедра стоя на одном колене, таз в заднем наклоне","scheme":"1×20 на ногу","rir":"—","rest":"—","muscle":"quads","muscleLabel":"Сгибатели бедра"},{"section":"Разминка","name":"Ротация грудного отдела в упоре на четвереньках","scheme":"1×10","rir":"—","rest":"—","muscle":"back","muscleLabel":"Грудной отдел"},{"section":"Разминка","name":"Ягодичный мостик с блоком для йоги между коленями","scheme":"3×15","rir":"—","rest":"","muscle":"glutes","muscleLabel":"Ягодицы"},{"section":"Разминка","name":"Боковая планка с ротацией грудного отдела","scheme":"3×10","rir":"—","rest":"","muscle":"abs","muscleLabel":"Пресс"},{"section":"Основная часть","name":"Латеральный выпад с гирей у груди","scheme":"1×10 разм.\n+ 3×10 на ногу","rir":"4-2","rest":"120 сек","muscle":"quads","muscleLabel":"Ноги"},{"section":"Основная часть","name":"Жим гантелей на наклонной скамье 30°","scheme":"1×10 разм.\n+ 4×10","rir":"4-2","rest":"90 сек","muscle":"chest","muscleLabel":"Грудь"},{"section":"Основная часть","name":"Разгибание голени в тренажёре, колени вместе (активация приводящих)","scheme":"3×12","rir":"2","rest":"90 сек","muscle":"quads","muscleLabel":"Квадрицепс"},{"section":"Основная часть","name":"Горизонтальное приведение плеча в тренажёре","scheme":"4×12","rir":"3","rest":"90 сек","muscle":"chest","muscleLabel":"Грудь"},{"section":"Основная часть","name":"Экстензия с диском","scheme":"3×12","rir":"3","rest":"60 сек","muscle":"back","muscleLabel":"Спина"},{"section":"Основная часть","name":"Вертикальный жим гантелей сидя","scheme":"1×12 разм.\n+ 4×10","rir":"4-2","rest":"90 сек","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Основная часть","name":"Разгибание рук на блоке (трицепс)","scheme":"3×15","rir":"2","rest":"90 сек","muscle":"triceps","muscleLabel":"Трицепс"},{"section":"Заминка","name":"Растяжка передней цепи (акцент: грудные, квадрицепс)","scheme":"","rir":"—","rest":"—","muscles":["chest","quads"],"muscleLabel":"Грудь · квадрицепс"},{"section":"Заминка","name":"Кардио, любой тренажёр, пульс до 130 уд/мин","scheme":"10 мин","rir":"—","rest":"—"}]},{"title":"Тренировка 3","exercises":[{"section":"Разминка","name":"Асимметричная ротация плеча с поворотом головы","scheme":"1×20","rir":"—","rest":"—","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Разминка","name":"Ротация манжеты плеча стоя спиной к стене","scheme":"1×20","rir":"—","rest":"—","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Разминка","name":"Флексия / экстензия позвоночника лицом к стене, руки за головой","scheme":"1×20","rir":"—","rest":"—","muscle":"back","muscleLabel":"Спина"},{"section":"Разминка","name":"Ротация грудного отдела стоя на коленях боком к стене","scheme":"1×10 на сторону","rir":"—","rest":"—","muscle":"back","muscleLabel":"Грудной отдел"},{"section":"Разминка","name":"Присед с ротацией грудного отдела в нижней точке","scheme":"1×10","rir":"—","rest":"—","muscles":["quads","back"],"muscleLabel":"Ноги · грудной отдел"},{"section":"Основная часть","name":"Подтягивания с резинкой","scheme":"4×8–10","rir":"1","rest":"120 сек","muscle":"back","muscleLabel":"Спина"},{"section":"Основная часть","name":"Горизонтальное отведение плеча в тренажёре","scheme":"4×15","rir":"2–3","rest":"90 сек","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Основная часть","name":"Горизонтальное приведение плеча с гантелями на наклонной скамье 30°","scheme":"3×12","rir":"3","rest":"60 сек","muscle":"chest","muscleLabel":"Грудь"},{"section":"Основная часть","name":"Горизонтальная тяга на блоке обратным хватом","scheme":"3×12","rir":"3","rest":"90 сек","muscle":"back","muscleLabel":"Спина"},{"section":"Основная часть","name":"Отведение плеча с гантелями","scheme":"4×12","rir":"2","rest":"60 сек","muscle":"shoulders","muscleLabel":"Плечи"},{"section":"Основная часть","name":"Разгибание рук с гантелью из-за головы сидя","scheme":"3×15","rir":"3","rest":"60 сек","muscle":"triceps","muscleLabel":"Трицепс"},{"section":"Заминка","name":"Скручивания на коврике","scheme":"3×15","rir":"—","rest":"60 сек","muscle":"abs","muscleLabel":"Пресс"},{"section":"Заминка","name":"Растяжка передней линии, акцент на пресс (собака мордой вверх)","scheme":"","rir":"—","rest":"—","muscle":"abs","muscleLabel":"Пресс"},{"section":"Заминка","name":"Кардио, любой тренажёр, пульс до 130 уд/мин","scheme":"10 мин","rir":"—","rest":"—"}]},{"title":"Кардио","exercises":[],"text":"2 раза в неделю.\nНеделя 1: обе тренировки по 30 мин, пульс 130–135 уд/мин.\nСо 2-й недели чередуем: кардио А — 40 мин, пульс 130–135 уд/мин;  кардио Б — интервальное 30 мин: 3 мин ходьба / 3 мин лёгкий бег."},{"title":"Прогрессия","exercises":[],"text":"Неделя 1 — втягивание: RIR на 1 выше указанного в таблице, освоение техники и подбор рабочих весов.\nНедели 2–3 — работа по программе: RIR как в таблице. Если все подходы сделаны с запасом больше заданного — в следующую тренировку +1–2,5 кг.\nНеделя 4 — восстановительная: на 1 рабочий подход меньше в каждом упражнении, RIR 3–4, веса прежние. Кардио без интервалов.\nНедели 5–6 — RIR на 1 ниже указанного (но не ниже 1), рост весов продолжается.\nНедели 7–8 — по самочувствию: продолжение блока или переход на новую программу.\n\nСколько ещё повторов вы могли бы сделать с правильной техникой после последнего повтора подхода. RIR 2 = подберите вес так, чтобы после заданных повторов оставалось 2 в запасе. RIR 0 = до отказа. Осталось больше запаса — в следующем подходе добавьте вес, меньше — снизьте. Запись «4-2»: разминочный подход на RIR 4, рабочие подходы на RIR 2."}]}</script>
+<script type="application/json" id="default-program">{"title":"Тренировки","subtitle":"Программа хранится на телефоне","workouts":[{"title":"Книга","exercises":[],"text":"Своя программа на GitHub не хранится."}]}</script>
 <script>
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (ch) => ({
@@ -2015,10 +2067,17 @@ async function readProgramFile(file) {
   const editBtn = document.getElementById("edit");
   const doneBtn = document.getElementById("done");
   const editFields = document.getElementById("edit-fields");
+  const timerToggle = document.getElementById("timer-toggle");
+  const timerResetBtn = document.getElementById("timer-reset");
+  const timerReadout = document.getElementById("timer-readout");
   const statuses = document.querySelectorAll("[data-status]");
   const KEY = "light-training-program-v2";
   let program = null;
   let selectedDay = 0;
+  let timerElapsed = 0;
+  let timerStarted = 0;
+  let timerRunning = false;
+  let timerTick = 0;
 
   function setStatus(text, ok) {
     statuses.forEach((el) => {
@@ -2033,9 +2092,53 @@ async function readProgramFile(file) {
     resetBtn.hidden = false;
   }
 
+  function clockText(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+    return hours ? hours + ":" + mm + ":" + ss : mm + ":" + ss;
+  }
+
+  function paintTimer() {
+    const ms = timerElapsed + (timerRunning ? Date.now() - timerStarted : 0);
+    timerReadout.textContent = clockText(ms);
+    timerToggle.textContent = timerRunning ? "Пауза" : "Старт";
+    timerToggle.classList.toggle("is-on", timerRunning);
+  }
+
+  function stopTimer() {
+    if (timerRunning) timerElapsed += Date.now() - timerStarted;
+    timerRunning = false;
+    clearInterval(timerTick);
+    paintTimer();
+  }
+
+  function toggleTimer() {
+    if (timerRunning) {
+      stopTimer();
+      return;
+    }
+    timerStarted = Date.now();
+    timerRunning = true;
+    clearInterval(timerTick);
+    timerTick = setInterval(paintTimer, 200);
+    paintTimer();
+  }
+
+  function resetTimer() {
+    timerElapsed = 0;
+    timerRunning = false;
+    clearInterval(timerTick);
+    paintTimer();
+  }
+
   function showGate() {
     document.body.classList.remove("has-program", "is-editing");
     resetBtn.hidden = true;
+    resetTimer();
   }
 
   function save() {
@@ -2472,6 +2575,9 @@ async function readProgramFile(file) {
   });
 
   manualBtn.addEventListener("click", startManual);
+  timerToggle.addEventListener("click", toggleTimer);
+  timerResetBtn.addEventListener("click", resetTimer);
+
   editBtn.addEventListener("click", openEditor);
   doneBtn.addEventListener("click", closeEditor);
   addDayBtn.addEventListener("click", addDay);

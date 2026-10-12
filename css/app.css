@@ -214,8 +214,8 @@ body.is-editing .editor { display: block; }
 }
 
 .day-title {
-  margin: 0 0 12px;
-  font-size: 28px;
+  margin: 0 0 8px;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.1;
 }
@@ -320,7 +320,52 @@ body.is-editing .editor { display: block; }
   padding:
     calc(28px + env(safe-area-inset-top))
     22px
-    calc(32px + env(safe-area-inset-bottom));
+    calc(96px + env(safe-area-inset-bottom));
+}
+
+.timer-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 5;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(480px, 100%);
+  padding: 12px 22px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.timer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.timer-btn {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1.5px solid #fff;
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font: 600 14px/1.1 var(--font);
+}
+
+.timer-btn.is-on {
+  background: #fff;
+  color: var(--bg);
+}
+
+.timer-readout {
+  margin: 0;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 .kicker {
@@ -476,8 +521,8 @@ details[open] > summary .mark {
   --top: 188px;
   position: relative;
   flex: 0 0 calc(100cqi - 60px);
-  height: min(520px, 68vh);
-  min-height: 420px;
+  height: min(520px, calc(100dvh - 400px));
+  min-height: 280px;
   overflow: hidden;
   scroll-snap-align: center;
   background: #000;

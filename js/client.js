@@ -12,10 +12,17 @@
   const editBtn = document.getElementById("edit");
   const doneBtn = document.getElementById("done");
   const editFields = document.getElementById("edit-fields");
+  const timerToggle = document.getElementById("timer-toggle");
+  const timerResetBtn = document.getElementById("timer-reset");
+  const timerReadout = document.getElementById("timer-readout");
   const statuses = document.querySelectorAll("[data-status]");
   const KEY = "light-training-program-v2";
   let program = null;
   let selectedDay = 0;
+  let timerElapsed = 0;
+  let timerStarted = 0;
+  let timerRunning = false;
+  let timerTick = 0;
 
   function setStatus(text, ok) {
     statuses.forEach((el) => {
@@ -30,9 +37,53 @@
     resetBtn.hidden = false;
   }
 
+  function clockText(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+    return hours ? hours + ":" + mm + ":" + ss : mm + ":" + ss;
+  }
+
+  function paintTimer() {
+    const ms = timerElapsed + (timerRunning ? Date.now() - timerStarted : 0);
+    timerReadout.textContent = clockText(ms);
+    timerToggle.textContent = timerRunning ? "Пауза" : "Старт";
+    timerToggle.classList.toggle("is-on", timerRunning);
+  }
+
+  function stopTimer() {
+    if (timerRunning) timerElapsed += Date.now() - timerStarted;
+    timerRunning = false;
+    clearInterval(timerTick);
+    paintTimer();
+  }
+
+  function toggleTimer() {
+    if (timerRunning) {
+      stopTimer();
+      return;
+    }
+    timerStarted = Date.now();
+    timerRunning = true;
+    clearInterval(timerTick);
+    timerTick = setInterval(paintTimer, 200);
+    paintTimer();
+  }
+
+  function resetTimer() {
+    timerElapsed = 0;
+    timerRunning = false;
+    clearInterval(timerTick);
+    paintTimer();
+  }
+
   function showGate() {
     document.body.classList.remove("has-program", "is-editing");
     resetBtn.hidden = true;
+    resetTimer();
   }
 
   function save() {
@@ -469,6 +520,9 @@
   });
 
   manualBtn.addEventListener("click", startManual);
+  timerToggle.addEventListener("click", toggleTimer);
+  timerResetBtn.addEventListener("click", resetTimer);
+
   editBtn.addEventListener("click", openEditor);
   doneBtn.addEventListener("click", closeEditor);
   addDayBtn.addEventListener("click", addDay);

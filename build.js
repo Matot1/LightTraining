@@ -64,6 +64,13 @@ ${css}
     <p class="subtitle" id="book-sub">${api.esc(program.subtitle || "")}</p>
   </header>
   <main id="day-page"></main>
+  <div class="timer-bar" id="timer-bar">
+    <div class="timer-actions">
+      <button id="timer-toggle" class="timer-btn" type="button">Старт</button>
+      <button id="timer-reset" class="timer-btn" type="button">Стоп</button>
+    </div>
+    <p class="timer-readout" id="timer-readout">00:00</p>
+  </div>
   <footer class="colophon">
     <label class="load" for="file">Загрузить программу</label>
     <button id="reset" class="linkish" type="button" hidden>Убрать программу</button>
